@@ -2,9 +2,11 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI-Aware — Learn to spot AI-powered scams</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
     body { background: #FAF8F5; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
     #__bundler_loading { position: fixed; bottom: 20px; right: 20px; font: 13px/1.4 -apple-system, BlinkMacSystemFont, sans-serif; color: #666; background: #fff; padding: 8px 14px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); z-index: 10000; }
     #__bundler_thumbnail { position: fixed; inset: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #FAF8F5; z-index: 9999; }
@@ -120,6 +122,32 @@ document.addEventListener('DOMContentLoaded', async function() {
     const resourceScript = '<script>window.__resources = ' +
       JSON.stringify(resourceMap).split('</' + 'script>').join('<\\/' + 'script>') +
       ';</' + 'script>';
+    const mobileEnhancements = [
+      '<script>(function(){',
+      'var viewportMeta=document.querySelector(\'meta[name="viewport"]\');',
+      'if(!viewportMeta){viewportMeta=document.createElement(\'meta\');viewportMeta.name=\'viewport\';viewportMeta.content=\'width=device-width, initial-scale=1\';document.head.appendChild(viewportMeta);}',
+      '})();</' + 'script>',
+      '<style id="__mobile_responsive_overrides">',
+      'html, body, #root { max-width: 100%; overflow-x: hidden; }',
+      'img, svg, video, canvas { max-width: 100%; height: auto; }',
+      '@media (max-width: 768px) {',
+      '  body { font-size: 17px !important; line-height: 1.5 !important; }',
+      '  main, section, header, footer { width: 100% !important; max-width: 100% !important; padding-left: 16px !important; padding-right: 16px !important; }',
+      '  h1 { font-size: clamp(28px, 7.5vw, 38px) !important; line-height: 1.15 !important; }',
+      '  h2 { font-size: clamp(24px, 6.2vw, 32px) !important; line-height: 1.2 !important; }',
+      '  h3 { font-size: clamp(20px, 5.2vw, 26px) !important; line-height: 1.25 !important; }',
+      '  p, li { font-size: 16px !important; line-height: 1.55 !important; }',
+      '  button, [role="button"], a[style*="display: inline-flex"] { min-height: 48px !important; padding: 12px 18px !important; font-size: 16px !important; }',
+      '  [style*="display: grid"][style*="grid-template-columns"] { grid-template-columns: minmax(0, 1fr) !important; }',
+      '  [style*="display: flex"][style*="justify-content: space-between"],',
+      '  [style*="display: flex"][style*="justify-content:space-between"] { flex-direction: column !important; align-items: stretch !important; gap: 12px !important; }',
+      '  [style*="position: sticky"] { position: static !important; top: auto !important; }',
+      '  [style*="padding: 72px 40px 40px"], [style*="padding: 40px 40px 80px"], [style*="padding: 48px 56px"], [style*="padding: 36px 40px"] {',
+      '    padding: 20px 16px !important;',
+      '  }',
+      '}',
+      '</style>'
+    ].join('');
     // Inject after <head> so the DOCTYPE stays first; prepending the script
     // would push the parser into quirks mode. DOMParser always emits a <head>
     // (synthesizing one if the source HTML omitted it) but may carry
@@ -128,7 +156,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const headOpen = template.match(/<head[^>]*>/i);
     if (headOpen) {
       const i = headOpen.index + headOpen[0].length;
-      template = template.slice(0, i) + resourceScript + template.slice(i);
+      template = template.slice(0, i) + resourceScript + mobileEnhancements + template.slice(i);
     }
 
     // Parse the template and swap the root element. Scripts inserted via
