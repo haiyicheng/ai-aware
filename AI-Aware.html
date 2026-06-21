@@ -1,0 +1,2830 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI-Aware — Learn to spot AI-powered scams</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1B365D;
+    --navy-ink: #0F2038;
+    --teal: #2A9D8F;
+    --teal-deep: #1F7A70;
+    --bg: #FAF8F5;
+    --bg-card: #FFFFFF;
+    --line: #E4E0D8;
+    --line-strong: #CFC9BD;
+    --ink: #1A1F2B;
+    --ink-2: #3F4756;
+    --muted: #6B7280;
+    --warn: #C2410C;
+    --success: #2A9D8F;
+    --focus: #F4C76A;
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
+    --shadow-card: 0 1px 2px rgba(16,24,40,0.04), 0 8px 24px -12px rgba(16,24,40,0.10);
+    --shadow-lift: 0 2px 4px rgba(16,24,40,0.04), 0 20px 40px -16px rgba(16,24,40,0.18);
+    --f-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --f-display: 'Inter', sans-serif;
+  }
+  [data-font="serif"] {
+    --f-display: 'Source Serif 4', Georgia, serif;
+  }
+  [data-density="roomy"] {
+    --radius-lg: 24px;
+    --radius-md: 18px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--f-body);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 20px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  :focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  button { font-family: inherit; }
+  #root { min-height: 100vh; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="application/json" id="tweak-defaults">
+/*EDITMODE-BEGIN*/{
+  "heroVariant": "stepper",
+  "surveyLayout": "stepped",
+  "dashboardStyle": "cards",
+  "fontPairing": "inter",
+  "density": "standard",
+  "showProgressRing": true
+}/*EDITMODE-END*/
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" data-presets="react">
+
+// ===== src/shared.jsx =====
+// Shared components, module data, icons, placeholders
+const MODULES = [
+  {
+    n: 1,
+    title: "What Is AI?",
+    blurb: "A plain-language tour of what artificial intelligence actually does — and doesn't do.",
+    minutes: 12,
+    lessons: 4,
+  },
+  {
+    n: 2,
+    title: "Spot the Red Flags",
+    blurb: "Pressure, urgency, odd requests — the tell-tale signs of an AI-powered scam.",
+    minutes: 18,
+    lessons: 6,
+  },
+  {
+    n: 3,
+    title: "Verify Before You Trust",
+    blurb: "Simple habits to confirm who's really calling, writing, or messaging you.",
+    minutes: 15,
+    lessons: 5,
+  },
+  {
+    n: 4,
+    title: "What to Do When It Happens",
+    blurb: "Clear, calm steps to take if you're ever targeted — and who to tell.",
+    minutes: 10,
+    lessons: 4,
+  },
+];
+
+// --- Primitive UI ---
+const Button = ({ children, onClick, variant = "primary", size = "lg", as = "button", href, disabled, style, ariaLabel, ...rest }) => {
+  const base = {
+    fontFamily: 'inherit',
+    fontWeight: 600,
+    letterSpacing: '-0.005em',
+    borderRadius: 999,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    transition: 'transform .08s ease, background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    textDecoration: 'none',
+    border: '2px solid transparent',
+    whiteSpace: 'nowrap',
+  };
+  const sizes = {
+    lg: { fontSize: 20, padding: '18px 32px', minHeight: 60 },
+    md: { fontSize: 18, padding: '14px 24px', minHeight: 52 },
+    sm: { fontSize: 16, padding: '10px 18px', minHeight: 44 },
+  };
+  const variants = {
+    primary: { background: 'var(--navy)', color: '#fff', borderColor: 'var(--navy)' },
+    teal: { background: 'var(--teal)', color: '#fff', borderColor: 'var(--teal)' },
+    outline: { background: 'transparent', color: 'var(--navy)', borderColor: 'var(--line-strong)' },
+    ghost: { background: 'transparent', color: 'var(--navy)', borderColor: 'transparent' },
+  };
+  const Tag = as;
+  const props = as === 'a' ? { href } : { type: 'button', disabled };
+  return (
+    <Tag
+      {...props}
+      onClick={disabled ? undefined : onClick}
+      aria-label={ariaLabel}
+      style={{ ...base, ...sizes[size], ...variants[variant], opacity: disabled ? 0.5 : 1, ...style }}
+      onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.transform = 'translateY(-1px)'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+      {...rest}
+    >
+      {children}
+    </Tag>
+  );
+};
+
+const ArrowRight = ({ size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+const ArrowLeft = ({ size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M19 12H5M11 5l-7 7 7 7" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+const CheckIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+// Module glyphs — simple, non-figurative
+const ModuleGlyph = ({ n, size = 40, color = "currentColor" }) => {
+  const stroke = color;
+  const common = { width: size, height: size, viewBox: "0 0 48 48", fill: "none", "aria-hidden": "true" };
+  if (n === 1) return (
+    <svg {...common}>
+      <circle cx="24" cy="24" r="14" stroke={stroke} strokeWidth="2.5"/>
+      <circle cx="24" cy="24" r="4" fill={stroke}/>
+    </svg>
+  );
+  if (n === 2) return (
+    <svg {...common}>
+      <path d="M24 8 L40 36 H8 Z" stroke={stroke} strokeWidth="2.5" strokeLinejoin="round"/>
+      <path d="M24 20 V28" stroke={stroke} strokeWidth="2.5" strokeLinecap="round"/>
+      <circle cx="24" cy="32" r="1.6" fill={stroke}/>
+    </svg>
+  );
+  if (n === 3) return (
+    <svg {...common}>
+      <path d="M24 6 L38 12 V24 C38 32 32 38 24 42 C16 38 10 32 10 24 V12 Z" stroke={stroke} strokeWidth="2.5" strokeLinejoin="round"/>
+      <path d="M18 24 L23 29 L31 19" stroke={stroke} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+  if (n === 4) return (
+    <svg {...common}>
+      <rect x="8" y="10" width="32" height="24" rx="4" stroke={stroke} strokeWidth="2.5"/>
+      <path d="M14 18 H34 M14 24 H28" stroke={stroke} strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M20 34 L20 40 L26 36" stroke={stroke} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+  return null;
+};
+
+// Striped placeholder
+const Placeholder = ({ label = "illustration", ratio = "4 / 3", style }) => (
+  <div
+    role="img"
+    aria-label={`Placeholder: ${label}`}
+    style={{
+      aspectRatio: ratio,
+      borderRadius: 'var(--radius-md)',
+      border: '1px solid var(--line)',
+      background: 'repeating-linear-gradient(135deg, #F1ECE1 0 12px, #EAE4D6 12px 24px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: '#7a6f58',
+      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+      fontSize: 13,
+      letterSpacing: '0.04em',
+      ...style,
+    }}
+  >
+    [ {label} ]
+  </div>
+);
+
+// Topbar
+const TopBar = ({ currentPage, onNav, progress }) => {
+  const link = (id, label) => (
+    <button
+      key={id}
+      onClick={() => onNav(id)}
+      style={{
+        background: 'transparent', border: 'none', cursor: 'pointer',
+        fontFamily: 'inherit', fontSize: 18, fontWeight: 500,
+        color: currentPage === id ? 'var(--navy-ink)' : 'var(--ink-2)',
+        padding: '10px 6px',
+        borderBottom: currentPage === id ? '2px solid var(--navy)' : '2px solid transparent',
+      }}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <header style={{
+      position: 'sticky', top: 0, zIndex: 10,
+      background: 'rgba(250,248,245,0.88)',
+      backdropFilter: 'saturate(1.4) blur(10px)',
+      WebkitBackdropFilter: 'saturate(1.4) blur(10px)',
+      borderBottom: '1px solid var(--line)',
+    }}>
+      <div style={{
+        maxWidth: 1200, margin: '0 auto',
+        padding: '18px 40px',
+        display: 'flex', alignItems: 'center', gap: 32,
+      }}>
+        <button
+          onClick={() => onNav('landing')}
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 12 }}
+          aria-label="AI-Aware home"
+        >
+          <LogoMark size={36} />
+          <span style={{ fontFamily: 'var(--f-display)', fontSize: 24, fontWeight: 700, color: 'var(--navy-ink)', letterSpacing: '-0.02em' }}>
+            AI-Aware
+          </span>
+        </button>
+        <nav style={{ display: 'flex', gap: 18, marginLeft: 24 }}>
+          {link('landing', 'Home')}
+          {link('dashboard', 'My Learning')}
+        </nav>
+        <div style={{ flex: 1 }} />
+        {progress != null && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, color: 'var(--ink-2)', fontSize: 16 }}>
+            <span>Your progress</span>
+            <div style={{ width: 140, height: 10, background: 'var(--line)', borderRadius: 999, overflow: 'hidden' }}>
+              <div style={{ width: `${progress}%`, height: '100%', background: 'var(--teal)', transition: 'width .4s ease' }} />
+            </div>
+            <span style={{ fontVariantNumeric: 'tabular-nums', minWidth: 40, textAlign: 'right' }}>{progress}%</span>
+          </div>
+        )}
+        <Button size="sm" variant="outline" onClick={() => onNav('help')}>Help & Support</Button>
+      </div>
+    </header>
+  );
+};
+
+const LogoMark = ({ size = 36 }) => (
+  <svg width={size} height={size} viewBox="0 0 48 52" aria-hidden="true">
+    {/* Shield silhouette: flat top, straight sides, pointed bottom */}
+    <path
+      d="M4 4 H44 V28 C44 38 36 45 24 50 C12 45 4 38 4 28 Z"
+      fill="var(--navy)"
+    />
+    {/* Outer ring */}
+    <circle cx="24" cy="24" r="10" stroke="var(--teal)" strokeWidth="3" fill="none"/>
+    {/* Inner dot */}
+    <circle cx="24" cy="24" r="3.2" fill="var(--teal)"/>
+  </svg>
+);
+
+const Footer = ({ onNav }) => (
+  <footer style={{
+    borderTop: '1px solid var(--line)',
+    marginTop: 80,
+    padding: '40px 40px 56px',
+    background: 'var(--bg)',
+  }}>
+    <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <LogoMark size={32} />
+        <div>
+          <div style={{ fontFamily: 'var(--f-display)', fontSize: 20, fontWeight: 700, color: 'var(--navy-ink)' }}>AI-Aware</div>
+          <div style={{ fontSize: 15, color: 'var(--muted)' }}>A free adaptive learning program</div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap', fontSize: 17 }}>
+        <a href="#" onClick={(e) => { e.preventDefault(); onNav('help'); }} style={{ color: 'var(--navy-ink)', textDecoration: 'none', fontWeight: 500 }}>Help & Support</a>
+        <a href="tel:18005551234" style={{ color: 'var(--navy-ink)', textDecoration: 'none', fontWeight: 500 }}>Call us: 1-800-555-1234</a>
+        <a href="#" style={{ color: 'var(--navy-ink)', textDecoration: 'none', fontWeight: 500 }}>Accessibility</a>
+        <a href="#" style={{ color: 'var(--navy-ink)', textDecoration: 'none', fontWeight: 500 }}>Privacy</a>
+      </div>
+    </div>
+    <div style={{ maxWidth: 1200, margin: '24px auto 0', color: 'var(--muted)', fontSize: 15 }}>
+      © 2026 AI-Aware. Made for learners, at every pace.
+    </div>
+  </footer>
+);
+
+// Export
+Object.assign(window, {
+  MODULES, Button, ArrowRight, ArrowLeft, CheckIcon, ModuleGlyph, Placeholder, TopBar, LogoMark, Footer,
+});
+
+
+// ===== src/landing.jsx =====
+// Landing page
+const Landing = ({ onNav, heroVariant }) => {
+  return (
+    <main>
+      {/* HERO */}
+      <section style={{
+        maxWidth: 1200, margin: '0 auto',
+        padding: '72px 40px 40px',
+        display: 'grid', gridTemplateColumns: 'minmax(0, 1.05fr) minmax(0, 0.95fr)',
+        gap: 64, alignItems: 'center',
+      }}>
+        <div>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 10,
+            padding: '8px 16px', borderRadius: 999,
+            background: '#EAF3F1', color: 'var(--teal-deep)',
+            fontSize: 16, fontWeight: 600,
+            border: '1px solid #D4E8E4',
+            marginBottom: 28,
+          }}>
+            <span style={{ width: 8, height: 8, borderRadius: 999, background: 'var(--teal)' }} />
+            Free · Self-paced · No experience needed
+          </div>
+          <h1 style={{
+            fontFamily: 'var(--f-display)',
+            fontSize: 'clamp(44px, 5.2vw, 68px)',
+            lineHeight: 1.04,
+            letterSpacing: '-0.025em',
+            color: 'var(--navy-ink)',
+            margin: '0 0 20px',
+            fontWeight: 700,
+            textWrap: 'balance',
+          }}>
+            Learn to spot<br/>AI-powered scams<br/><span style={{ color: 'var(--teal-deep)' }}>at your own pace.</span>
+          </h1>
+          <p style={{
+            fontSize: 22, lineHeight: 1.5, color: 'var(--ink-2)',
+            maxWidth: 560, margin: '0 0 36px',
+          }}>
+            A free four-part program that teaches you to recognize today's most
+            convincing scams — from voice clones to fake emails. Take a short
+            survey and we'll start you right where you are.
+          </p>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Button variant="primary" onClick={() => onNav('survey')}>
+              Get started <ArrowRight/>
+            </Button>
+            <Button variant="ghost" onClick={() => onNav('dashboard')}>
+              See the modules
+            </Button>
+          </div>
+          <div style={{ marginTop: 40, display: 'flex', gap: 32, flexWrap: 'wrap', color: 'var(--ink-2)', fontSize: 17 }}>
+            {[
+              ['About 55 min', 'total, across 4 modules'],
+              ['Plain language', 'no tech jargon, ever'],
+              ['Read or listen', 'every lesson narrated'],
+            ].map(([a, b]) => (
+              <div key={a}>
+                <div style={{ fontWeight: 600, color: 'var(--navy-ink)', fontSize: 18 }}>{a}</div>
+                <div>{b}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <HeroCard />
+      </section>
+
+      {/* PATHWAY / STEPPER */}
+      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '72px 40px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 40 }}>
+          <div>
+            <div style={{ color: 'var(--teal-deep)', fontSize: 16, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 12 }}>
+              Your learning path
+            </div>
+            <h2 style={{
+              fontFamily: 'var(--f-display)',
+              fontSize: 'clamp(32px, 3.6vw, 44px)',
+              letterSpacing: '-0.02em',
+              color: 'var(--navy-ink)',
+              margin: 0, fontWeight: 700,
+              textWrap: 'balance',
+            }}>
+              Four modules. Start anywhere. Finish at your own pace.
+            </h2>
+          </div>
+        </div>
+        {heroVariant === 'stepper' ? <Pathway/> : <PathwayCards/>}
+      </section>
+
+      {/* REASSURANCE BAND */}
+      <section style={{
+        maxWidth: 1200, margin: '56px auto 0',
+        padding: '40px',
+      }}>
+        <div style={{
+          background: 'var(--navy)',
+          color: '#fff',
+          borderRadius: 24,
+          padding: '48px 56px',
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1.3fr) minmax(0, 1fr)',
+          gap: 48,
+          alignItems: 'center',
+        }}>
+          <div>
+            <h3 style={{
+              fontFamily: 'var(--f-display)',
+              fontSize: 36, fontWeight: 700,
+              margin: '0 0 16px',
+              letterSpacing: '-0.02em',
+              textWrap: 'balance',
+            }}>
+              You've spotted scams before. We'll help you spot the new ones.
+            </h3>
+            <p style={{ fontSize: 20, lineHeight: 1.55, color: '#D8E0EC', margin: 0, maxWidth: 540 }}>
+              AI makes fake voices, videos, and messages easier than ever. The rules
+              for staying safe haven't really changed — they just need an update.
+            </p>
+          </div>
+          <div style={{ display: 'grid', gap: 14 }}>
+            {[
+              "Clear examples in everyday language",
+              "Short lessons — 3 to 5 minutes each",
+              "Pause and return whenever you like",
+            ].map((t) => (
+              <div key={t} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                <span style={{
+                  display: 'inline-flex', width: 32, height: 32, borderRadius: 999,
+                  background: 'var(--teal)', color: '#fff',
+                  alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  <CheckIcon size={18}/>
+                </span>
+                <span style={{ fontSize: 19, paddingTop: 4 }}>{t}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section style={{ maxWidth: 900, margin: '0 auto', padding: '80px 40px 40px', textAlign: 'center' }}>
+        <h3 style={{
+          fontFamily: 'var(--f-display)',
+          fontSize: 'clamp(30px, 3.2vw, 40px)',
+          letterSpacing: '-0.02em',
+          color: 'var(--navy-ink)',
+          margin: '0 0 16px', fontWeight: 700,
+        }}>
+          Ready when you are.
+        </h3>
+        <p style={{ fontSize: 20, color: 'var(--ink-2)', margin: '0 0 32px' }}>
+          Answer four quick questions and we'll recommend where to begin.
+        </p>
+        <Button variant="teal" onClick={() => onNav('survey')}>
+          Get started <ArrowRight/>
+        </Button>
+      </section>
+    </main>
+  );
+};
+
+// Decorative, non-figurative hero card
+const HeroCard = () => {
+  return (
+    <div style={{ position: 'relative' }}>
+      <div style={{
+        background: '#fff',
+        border: '1px solid var(--line)',
+        borderRadius: 28,
+        padding: 28,
+        boxShadow: 'var(--shadow-lift)',
+      }}>
+        <div style={{
+          background: 'var(--bg)',
+          border: '1px solid var(--line)',
+          borderRadius: 18,
+          padding: '22px 24px',
+          display: 'flex', gap: 16, alignItems: 'center',
+          marginBottom: 16,
+        }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: 999, flexShrink: 0,
+            background: '#EAF3F1', color: 'var(--teal-deep)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: '1px solid #D4E8E4',
+          }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </div>
+          <div>
+            <div style={{ fontSize: 15, color: 'var(--muted)' }}>Lesson 2 · 3 min</div>
+            <div style={{ fontSize: 19, fontWeight: 600, color: 'var(--navy-ink)' }}>Pressure & urgency — why scammers rush you</div>
+          </div>
+        </div>
+        <div style={{
+          background: '#FFF8EE',
+          border: '1px solid #F2E3C1',
+          borderRadius: 18,
+          padding: 22,
+          marginBottom: 16,
+        }}>
+          <div style={{ fontSize: 14, color: '#8A6D2B', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
+            Example message
+          </div>
+          <div style={{ fontSize: 19, lineHeight: 1.45, color: 'var(--ink)' }}>
+            "Grandma, it's me — I'm in trouble and need you to wire money right now. Please don't tell Mom."
+          </div>
+          <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
+            <Chip>Urgency</Chip>
+            <Chip>Secrecy</Chip>
+            <Chip>Money request</Chip>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <div style={{ flex: 1, height: 8, borderRadius: 999, background: 'var(--teal)' }}/>
+          <div style={{ flex: 1, height: 8, borderRadius: 999, background: 'var(--teal)', opacity: 0.7 }}/>
+          <div style={{ flex: 1, height: 8, borderRadius: 999, background: 'var(--line-strong)' }}/>
+          <div style={{ flex: 1, height: 8, borderRadius: 999, background: 'var(--line-strong)' }}/>
+        </div>
+      </div>
+      <div style={{
+        position: 'absolute',
+        right: -12, bottom: -20,
+        background: '#fff', border: '1px solid var(--line)', borderRadius: 16,
+        padding: '14px 18px',
+        boxShadow: 'var(--shadow-card)',
+        display: 'flex', alignItems: 'center', gap: 12,
+        fontSize: 17, fontWeight: 500,
+      }}>
+        <span style={{ width: 10, height: 10, borderRadius: 999, background: 'var(--teal)' }} />
+        <span style={{ color: 'var(--navy-ink)' }}>Module 2 · 6 lessons</span>
+      </div>
+    </div>
+  );
+};
+
+const Chip = ({ children }) => (
+  <span style={{
+    display: 'inline-flex', alignItems: 'center',
+    padding: '6px 12px', borderRadius: 999,
+    background: '#fff', border: '1px solid #E7D4A6',
+    color: '#8A6D2B', fontSize: 15, fontWeight: 500,
+  }}>{children}</span>
+);
+
+// Horizontal stepper pathway
+const Pathway = () => {
+  return (
+    <div style={{
+      background: '#fff',
+      border: '1px solid var(--line)',
+      borderRadius: 24,
+      padding: '44px 36px 36px',
+      boxShadow: 'var(--shadow-card)',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* connector line */}
+      <div style={{
+        position: 'absolute',
+        top: 84, left: 80, right: 80, height: 3,
+        background: 'var(--line-strong)',
+        borderRadius: 999,
+      }}/>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: 20,
+        position: 'relative',
+      }}>
+        {MODULES.map((m, i) => (
+          <div key={m.n} style={{ textAlign: 'center', padding: '0 8px' }}>
+            <div style={{
+              width: 80, height: 80, borderRadius: 999,
+              background: i === 0 ? 'var(--navy)' : '#fff',
+              border: `3px solid ${i === 0 ? 'var(--navy)' : 'var(--line-strong)'}`,
+              color: i === 0 ? '#fff' : 'var(--navy)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 18px',
+              position: 'relative', zIndex: 1,
+              boxShadow: i === 0 ? '0 0 0 6px rgba(27,54,93,0.08)' : 'none',
+            }}>
+              <div style={{ fontFamily: 'var(--f-display)', fontSize: 28, fontWeight: 700 }}>{m.n}</div>
+            </div>
+            <div style={{
+              fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 700,
+              color: 'var(--navy-ink)', letterSpacing: '-0.01em',
+              marginBottom: 8,
+              textWrap: 'balance',
+            }}>
+              {m.title}
+            </div>
+            <div style={{ fontSize: 16, color: 'var(--ink-2)', lineHeight: 1.45, textWrap: 'pretty' }}>
+              {m.blurb}
+            </div>
+            <div style={{ marginTop: 12, fontSize: 15, color: 'var(--muted)', fontWeight: 500 }}>
+              {m.lessons} lessons · {m.minutes} min
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Alternate: card-grid layout
+const PathwayCards = () => (
+  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+    {MODULES.map((m) => (
+      <div key={m.n} style={{
+        background: '#fff', border: '1px solid var(--line)',
+        borderRadius: 20, padding: 28,
+        boxShadow: 'var(--shadow-card)',
+      }}>
+        <div style={{ fontSize: 15, color: 'var(--muted)', fontWeight: 600, letterSpacing: '0.06em' }}>MODULE {m.n}</div>
+        <div style={{ margin: '16px 0', color: 'var(--navy)' }}>
+          <ModuleGlyph n={m.n} size={44}/>
+        </div>
+        <div style={{ fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-ink)', marginBottom: 8 }}>
+          {m.title}
+        </div>
+        <div style={{ fontSize: 16, color: 'var(--ink-2)', lineHeight: 1.5 }}>
+          {m.blurb}
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+Object.assign(window, { Landing });
+
+
+// ===== src/survey.jsx =====
+// Onboarding survey with adaptive recommendation
+const QUESTIONS = [
+  {
+    id: 'q1',
+    prompt: 'Have you ever used a voice assistant like Siri or Alexa?',
+    help: "A voice assistant lets you ask a device questions out loud.",
+    options: [
+      { id: 'yes',    label: 'Yes',                              weight: 0 },
+      { id: 'no',     label: 'No',                               weight: 1 },
+      { id: 'unsure', label: "Not sure what that is",            weight: 2 },
+    ],
+  },
+  {
+    id: 'q2',
+    prompt: 'Have you heard of deepfake videos or voice cloning?',
+    help: "These are fake videos or voices made by a computer that sound or look real.",
+    options: [
+      { id: 'know',    label: 'Yes, I know what they are',             weight: 0 },
+      { id: 'heard',   label: "I've heard the terms but I'm not sure", weight: 1 },
+      { id: 'new',     label: 'No, this is new to me',                 weight: 2 },
+    ],
+  },
+  {
+    id: 'q3',
+    prompt: 'In the past year, have you received a suspicious email, text, or phone call?',
+    options: [
+      { id: 'yes',    label: 'Yes',         weight: 2 },
+      { id: 'no',     label: 'No',          weight: 0 },
+      { id: 'unsure', label: "I'm not sure", weight: 1 },
+    ],
+  },
+  {
+    id: 'q4',
+    prompt: 'How confident do you feel about spotting online scams?',
+    options: [
+      { id: 'very',     label: 'Very confident',          weight: 0 },
+      { id: 'somewhat', label: 'Somewhat confident',      weight: 1 },
+      { id: 'not',      label: 'Not confident at all',    weight: 2 },
+    ],
+  },
+];
+
+// Map weighted score to recommended module (1-4)
+const recommendModule = (answers) => {
+  const score = QUESTIONS.reduce((s, q) => {
+    const a = answers[q.id];
+    const opt = q.options.find(o => o.id === a);
+    return s + (opt ? opt.weight : 0);
+  }, 0);
+  // 0-8 range → map
+  if (score <= 1) return 3;   // confident, no incidents — jump ahead
+  if (score <= 3) return 2;   // moderate
+  if (score <= 5) return 1;   // low-moderate
+  return 1;                   // low — start from beginning
+};
+
+const Survey = ({ onNav, onComplete, surveyLayout, answers, setAnswers }) => {
+  const [step, setStep] = React.useState('intro'); // intro | q-index | result
+
+  const allAnswered = QUESTIONS.every(q => answers[q.id]);
+  const recommended = allAnswered ? recommendModule(answers) : null;
+
+  return (
+    <main style={{ maxWidth: 880, margin: '0 auto', padding: '48px 40px 80px' }}>
+      {step === 'intro' && (
+        <SurveyIntro onStart={() => setStep(surveyLayout === 'stacked' ? 'stacked' : 0)} onNav={onNav} layout={surveyLayout}/>
+      )}
+      {surveyLayout === 'stacked' && step === 'stacked' && (
+        <SurveyStacked
+          answers={answers}
+          setAnswers={setAnswers}
+          onBack={() => setStep('intro')}
+          onContinue={() => setStep('result')}
+          allAnswered={allAnswered}
+        />
+      )}
+      {typeof step === 'number' && (
+        <SurveyStepped
+          idx={step}
+          answers={answers}
+          setAnswers={setAnswers}
+          onBack={() => setStep(step === 0 ? 'intro' : step - 1)}
+          onNext={() => {
+            if (step < QUESTIONS.length - 1) setStep(step + 1);
+            else setStep('result');
+          }}
+        />
+      )}
+      {step === 'result' && (
+        <SurveyResult recommended={recommended} onBegin={() => { onComplete(recommended); onNav('dashboard'); }} onEdit={() => setStep(surveyLayout === 'stacked' ? 'stacked' : 0)}/>
+      )}
+    </main>
+  );
+};
+
+const SurveyIntro = ({ onStart, onNav, layout }) => (
+  <div>
+    <button onClick={() => onNav('landing')} style={{
+      background: 'transparent', border: 'none', cursor: 'pointer',
+      color: 'var(--ink-2)', fontSize: 17, fontFamily: 'inherit',
+      display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 0', marginBottom: 32,
+    }}>
+      <ArrowLeft size={18}/> Back to home
+    </button>
+    <div style={{ color: 'var(--teal-deep)', fontSize: 16, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 16 }}>
+      Step 1 of 2 · About you
+    </div>
+    <h1 style={{
+      fontFamily: 'var(--f-display)',
+      fontSize: 'clamp(38px, 4.6vw, 56px)',
+      letterSpacing: '-0.02em',
+      color: 'var(--navy-ink)',
+      margin: '0 0 18px',
+      lineHeight: 1.05, fontWeight: 700,
+      textWrap: 'balance',
+    }}>
+      Let's personalize your experience.
+    </h1>
+    <p style={{ fontSize: 22, color: 'var(--ink-2)', lineHeight: 1.5, maxWidth: 640, margin: '0 0 40px' }}>
+      Answer a few quick questions so we can start you at the right level.
+      There are no wrong answers — just pick what feels true for you.
+    </p>
+    <div style={{
+      background: '#fff', border: '1px solid var(--line)',
+      borderRadius: 20, padding: '28px 32px', marginBottom: 40,
+      display: 'grid', gap: 14,
+    }}>
+      {[
+        ['4 short questions', 'Takes about 1 minute'],
+        ['Your answers stay private', 'We don\'t share them with anyone'],
+        ['You can change them later', 'Update your path any time'],
+      ].map(([a, b]) => (
+        <div key={a} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+          <span style={{
+            display: 'inline-flex', width: 32, height: 32, borderRadius: 999,
+            background: '#EAF3F1', color: 'var(--teal-deep)',
+            alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2,
+          }}>
+            <CheckIcon size={18}/>
+          </span>
+          <div>
+            <div style={{ fontSize: 19, fontWeight: 600, color: 'var(--navy-ink)' }}>{a}</div>
+            <div style={{ fontSize: 17, color: 'var(--ink-2)' }}>{b}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+    <Button variant="primary" onClick={onStart}>
+      Begin the questions <ArrowRight/>
+    </Button>
+  </div>
+);
+
+// Stepped (one question per screen)
+const SurveyStepped = ({ idx, answers, setAnswers, onBack, onNext }) => {
+  const q = QUESTIONS[idx];
+  const selected = answers[q.id];
+  const total = QUESTIONS.length;
+  return (
+    <div>
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, fontSize: 16, color: 'var(--ink-2)' }}>
+          <span style={{ fontWeight: 600 }}>Question {idx + 1} of {total}</span>
+          <span>{Math.round(((idx + 1) / total) * 100)}% complete</span>
+        </div>
+        <div style={{ height: 8, background: 'var(--line)', borderRadius: 999, overflow: 'hidden' }}>
+          <div style={{ width: `${((idx + 1) / total) * 100}%`, height: '100%', background: 'var(--teal)', transition: 'width .35s ease' }}/>
+        </div>
+      </div>
+
+      <h2 style={{
+        fontFamily: 'var(--f-display)',
+        fontSize: 'clamp(30px, 3.6vw, 42px)',
+        letterSpacing: '-0.02em', lineHeight: 1.15,
+        color: 'var(--navy-ink)', fontWeight: 700, margin: '0 0 12px',
+        textWrap: 'balance',
+      }}>
+        {q.prompt}
+      </h2>
+      {q.help && <p style={{ fontSize: 18, color: 'var(--ink-2)', margin: '0 0 32px' }}>{q.help}</p>}
+
+      <div role="radiogroup" style={{ display: 'grid', gap: 14, marginBottom: 40 }}>
+        {q.options.map(o => (
+          <OptionRow
+            key={o.id}
+            label={o.label}
+            selected={selected === o.id}
+            onClick={() => setAnswers(a => ({ ...a, [q.id]: o.id }))}
+          />
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Button variant="outline" size="md" onClick={onBack}>
+          <ArrowLeft size={20}/> Back
+        </Button>
+        <Button variant="primary" onClick={onNext} disabled={!selected}>
+          {idx === QUESTIONS.length - 1 ? 'See my recommendation' : 'Continue'} <ArrowRight/>
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// Stacked (all questions at once)
+const SurveyStacked = ({ answers, setAnswers, onBack, onContinue, allAnswered }) => {
+  const done = QUESTIONS.filter(q => answers[q.id]).length;
+  return (
+    <div>
+      <button onClick={onBack} style={{
+        background: 'transparent', border: 'none', cursor: 'pointer',
+        color: 'var(--ink-2)', fontSize: 17, fontFamily: 'inherit',
+        display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 0', marginBottom: 24,
+      }}>
+        <ArrowLeft size={18}/> Back
+      </button>
+      <h2 style={{
+        fontFamily: 'var(--f-display)',
+        fontSize: 'clamp(32px, 4vw, 44px)',
+        letterSpacing: '-0.02em',
+        color: 'var(--navy-ink)', fontWeight: 700, margin: '0 0 12px',
+        textWrap: 'balance',
+      }}>
+        A few quick questions.
+      </h2>
+      <p style={{ fontSize: 20, color: 'var(--ink-2)', margin: '0 0 32px' }}>
+        Take your time — there's no timer. You've answered {done} of {QUESTIONS.length}.
+      </p>
+
+      <div style={{ display: 'grid', gap: 28, marginBottom: 40 }}>
+        {QUESTIONS.map((q, i) => (
+          <div key={q.id} style={{
+            background: '#fff', border: '1px solid var(--line)',
+            borderRadius: 20, padding: '28px 32px',
+            boxShadow: 'var(--shadow-card)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+              <span style={{
+                display: 'inline-flex', width: 32, height: 32, borderRadius: 999,
+                background: answers[q.id] ? 'var(--teal)' : 'var(--line)',
+                color: answers[q.id] ? '#fff' : 'var(--ink-2)',
+                alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16,
+              }}>
+                {answers[q.id] ? <CheckIcon size={18}/> : i + 1}
+              </span>
+              <div style={{ fontSize: 15, color: 'var(--muted)', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                Question {i + 1}
+              </div>
+            </div>
+            <div style={{
+              fontFamily: 'var(--f-display)', fontSize: 24, fontWeight: 700,
+              color: 'var(--navy-ink)', letterSpacing: '-0.01em',
+              margin: '4px 0 6px', textWrap: 'balance',
+            }}>
+              {q.prompt}
+            </div>
+            {q.help && <p style={{ fontSize: 17, color: 'var(--ink-2)', margin: '0 0 18px' }}>{q.help}</p>}
+            <div role="radiogroup" style={{ display: 'grid', gap: 10 }}>
+              {q.options.map(o => (
+                <OptionRow
+                  key={o.id}
+                  label={o.label}
+                  selected={answers[q.id] === o.id}
+                  onClick={() => setAnswers(a => ({ ...a, [q.id]: o.id }))}
+                  compact
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Button variant="primary" onClick={onContinue} disabled={!allAnswered}>
+          See my recommendation <ArrowRight/>
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const OptionRow = ({ label, selected, onClick, compact = false }) => (
+  <button
+    role="radio"
+    aria-checked={selected}
+    onClick={onClick}
+    style={{
+      textAlign: 'left', cursor: 'pointer',
+      padding: compact ? '16px 20px' : '20px 24px',
+      minHeight: compact ? 60 : 72,
+      borderRadius: 14,
+      background: selected ? '#EAF3F1' : '#fff',
+      border: `2px solid ${selected ? 'var(--teal)' : 'var(--line-strong)'}`,
+      color: 'var(--navy-ink)', fontFamily: 'inherit',
+      fontSize: compact ? 18 : 20, fontWeight: 500,
+      display: 'flex', alignItems: 'center', gap: 16,
+      transition: 'all .12s ease',
+      boxShadow: selected ? '0 0 0 4px rgba(42,157,143,0.12)' : 'none',
+    }}
+    onMouseEnter={(e) => { if (!selected) e.currentTarget.style.borderColor = 'var(--navy)'; }}
+    onMouseLeave={(e) => { if (!selected) e.currentTarget.style.borderColor = 'var(--line-strong)'; }}
+  >
+    <span aria-hidden="true" style={{
+      width: 26, height: 26, borderRadius: 999,
+      border: `2px solid ${selected ? 'var(--teal)' : 'var(--line-strong)'}`,
+      background: selected ? 'var(--teal)' : '#fff',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    }}>
+      {selected && <span style={{ width: 10, height: 10, borderRadius: 999, background: '#fff' }}/>}
+    </span>
+    <span>{label}</span>
+  </button>
+);
+
+const SurveyResult = ({ recommended, onBegin, onEdit }) => {
+  const mod = MODULES[recommended - 1];
+  return (
+    <div>
+      <div style={{
+        display: 'inline-flex', alignItems: 'center', gap: 10,
+        padding: '8px 16px', borderRadius: 999,
+        background: '#EAF3F1', color: 'var(--teal-deep)',
+        fontSize: 16, fontWeight: 600,
+        border: '1px solid #D4E8E4',
+        marginBottom: 24,
+      }}>
+        <CheckIcon size={18}/> All done — thank you
+      </div>
+      <h1 style={{
+        fontFamily: 'var(--f-display)',
+        fontSize: 'clamp(36px, 4.4vw, 52px)',
+        letterSpacing: '-0.02em', lineHeight: 1.08,
+        color: 'var(--navy-ink)', fontWeight: 700, margin: '0 0 16px',
+        textWrap: 'balance',
+      }}>
+        Based on your answers, we recommend starting with<br/>
+        <span style={{ color: 'var(--teal-deep)' }}>Module {recommended}: {mod.title}.</span>
+      </h1>
+      <p style={{ fontSize: 21, color: 'var(--ink-2)', margin: '0 0 40px', maxWidth: 640 }}>
+        You can always go back to earlier modules, or skip ahead — this is your path.
+      </p>
+
+      <div style={{
+        background: '#fff', border: '2px solid var(--teal)',
+        borderRadius: 24, padding: '32px 36px', marginBottom: 32,
+        boxShadow: '0 0 0 6px rgba(42,157,143,0.08)',
+      }}>
+        <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+          <div style={{
+            width: 72, height: 72, borderRadius: 18,
+            background: 'var(--navy)', color: '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
+            <ModuleGlyph n={recommended} size={40} color="#fff"/>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, color: 'var(--muted)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
+              Recommended start · Module {recommended}
+            </div>
+            <div style={{ fontFamily: 'var(--f-display)', fontSize: 30, fontWeight: 700, color: 'var(--navy-ink)', letterSpacing: '-0.01em', marginBottom: 8 }}>
+              {mod.title}
+            </div>
+            <div style={{ fontSize: 18, color: 'var(--ink-2)', marginBottom: 12 }}>
+              {mod.blurb}
+            </div>
+            <div style={{ fontSize: 16, color: 'var(--muted)', fontWeight: 500 }}>
+              {mod.lessons} lessons · about {mod.minutes} minutes
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        <Button variant="primary" onClick={onBegin}>
+          Begin learning <ArrowRight/>
+        </Button>
+        <Button variant="outline" onClick={onEdit}>
+          Change my answers
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, { Survey, recommendModule, QUESTIONS });
+
+
+// ===== src/dashboard.jsx =====
+// Module dashboard
+const Dashboard = ({ onNav, recommended, progress, dashboardStyle, onProgressChange, onOpenModule }) => {
+  // progress: { 1: 'not-started' | 'in-progress' | 'completed', ... }
+  const overall = Math.round(
+    (Object.values(progress).reduce((s, p) => s + (p === 'completed' ? 1 : p === 'in-progress' ? 0.5 : 0), 0) / 4) * 100
+  );
+
+  return (
+    <main style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 40px 40px' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 24, marginBottom: 40 }}>
+        <div>
+          <div style={{ color: 'var(--teal-deep)', fontSize: 16, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 12 }}>
+            My Learning
+          </div>
+          <h1 style={{
+            fontFamily: 'var(--f-display)',
+            fontSize: 'clamp(38px, 4.4vw, 52px)',
+            letterSpacing: '-0.02em', lineHeight: 1.05,
+            color: 'var(--navy-ink)', fontWeight: 700, margin: '0 0 10px',
+            textWrap: 'balance',
+          }}>
+            Welcome back.
+          </h1>
+          <p style={{ fontSize: 20, color: 'var(--ink-2)', margin: 0, maxWidth: 560 }}>
+            {recommended
+              ? <>We've started you at <strong style={{ color: 'var(--navy-ink)' }}>Module {recommended}: {MODULES[recommended - 1].title}</strong>. Choose any module below to begin.</>
+              : <>Pick any module to begin. You can always come back and change your path.</>}
+          </p>
+        </div>
+        <ProgressRing value={overall}/>
+      </div>
+
+      {/* Continue card */}
+      {recommended && (
+        <ContinueCard
+          mod={MODULES[recommended - 1]}
+          status={progress[recommended]}
+          onContinue={() => {
+            onProgressChange(recommended, 'in-progress');
+            onOpenModule(recommended);
+          }}
+        />
+      )}
+
+      {/* Module list */}
+      <h2 style={{
+        fontFamily: 'var(--f-display)',
+        fontSize: 28, fontWeight: 700,
+        color: 'var(--navy-ink)', letterSpacing: '-0.01em',
+        margin: '56px 0 20px',
+      }}>
+        All modules
+      </h2>
+
+      {dashboardStyle === 'list' ? (
+        <div style={{ display: 'grid', gap: 16 }}>
+          {MODULES.map(m => (
+            <ModuleRow
+              key={m.n}
+              mod={m}
+              status={progress[m.n]}
+              recommended={recommended === m.n}
+              onOpen={() => {
+                onProgressChange(m.n, progress[m.n] === 'completed' ? 'completed' : 'in-progress');
+                onOpenModule(m.n);
+              }}
+            />
+          ))}
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+          {MODULES.map(m => (
+            <ModuleCard
+              key={m.n}
+              mod={m}
+              status={progress[m.n]}
+              recommended={recommended === m.n}
+              onOpen={() => {
+                onProgressChange(m.n, progress[m.n] === 'completed' ? 'completed' : 'in-progress');
+                onOpenModule(m.n);
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Support footer */}
+      <div style={{
+        marginTop: 64,
+        background: '#fff', border: '1px solid var(--line)',
+        borderRadius: 20, padding: '28px 32px',
+        display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap',
+      }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: 16,
+          background: '#EAF3F1', color: 'var(--teal-deep)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M22 16.92V19a2 2 0 0 1-2.18 2 19.9 19.9 0 0 1-8.63-3.07 19.6 19.6 0 0 1-6-6A19.9 19.9 0 0 1 2.12 3.18 2 2 0 0 1 4.11 1h2.09a2 2 0 0 1 2 1.72c.13.96.37 1.9.73 2.8a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.28-1.28a2 2 0 0 1 2.11-.45c.9.36 1.84.6 2.8.73a2 2 0 0 1 1.72 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </div>
+        <div style={{ flex: 1, minWidth: 260 }}>
+          <div style={{ fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-ink)', marginBottom: 4 }}>
+            Need a hand?
+          </div>
+          <div style={{ fontSize: 17, color: 'var(--ink-2)' }}>
+            Call our learner support line at <strong>1-800-555-1234</strong> · Mon–Fri 8am–6pm.
+          </div>
+        </div>
+        <Button variant="outline" size="md" onClick={() => onNav('help')}>Help & Support</Button>
+      </div>
+    </main>
+  );
+};
+
+const ProgressRing = ({ value }) => {
+  const r = 42, c = 2 * Math.PI * r;
+  const offset = c * (1 - value / 100);
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ position: 'relative', width: 100, height: 100 }}>
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r={r} stroke="var(--line)" strokeWidth="8" fill="none"/>
+          <circle
+            cx="50" cy="50" r={r}
+            stroke="var(--teal)" strokeWidth="8" fill="none"
+            strokeLinecap="round"
+            strokeDasharray={c}
+            strokeDashoffset={offset}
+            transform="rotate(-90 50 50)"
+            style={{ transition: 'stroke-dashoffset .5s ease' }}
+          />
+        </svg>
+        <div style={{
+          position: 'absolute', inset: 0, display: 'flex',
+          alignItems: 'center', justifyContent: 'center',
+          fontFamily: 'var(--f-display)', fontSize: 24, fontWeight: 700, color: 'var(--navy-ink)',
+          fontVariantNumeric: 'tabular-nums',
+        }}>
+          {value}%
+        </div>
+      </div>
+      <div>
+        <div style={{ fontSize: 17, color: 'var(--ink-2)' }}>Overall</div>
+        <div style={{ fontSize: 19, fontWeight: 600, color: 'var(--navy-ink)' }}>Your progress</div>
+      </div>
+    </div>
+  );
+};
+
+const ContinueCard = ({ mod, status, onContinue }) => {
+  const label = status === 'completed' ? 'Review' : status === 'in-progress' ? 'Continue' : 'Start';
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, var(--navy) 0%, #23426E 100%)',
+      color: '#fff',
+      borderRadius: 24,
+      padding: '36px 40px',
+      display: 'grid',
+      gridTemplateColumns: 'minmax(0, 1fr) auto',
+      gap: 32,
+      alignItems: 'center',
+      boxShadow: '0 20px 40px -20px rgba(27,54,93,0.4)',
+    }}>
+      <div>
+        <div style={{ fontSize: 15, fontWeight: 600, color: '#9BC2BC', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>
+          Pick up where you left off
+        </div>
+        <div style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(26px, 2.8vw, 34px)', fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.15, marginBottom: 10, textWrap: 'balance' }}>
+          Module {mod.n}: {mod.title}
+        </div>
+        <div style={{ fontSize: 18, color: '#C9D4E4', marginBottom: 8, maxWidth: 560 }}>
+          {mod.blurb}
+        </div>
+        <div style={{ fontSize: 16, color: '#9BC2BC', fontWeight: 500 }}>
+          {mod.lessons} lessons · about {mod.minutes} minutes
+        </div>
+      </div>
+      <Button variant="teal" onClick={onContinue} style={{ background: '#fff', color: 'var(--navy-ink)', borderColor: '#fff' }}>
+        {label} module <ArrowRight/>
+      </Button>
+    </div>
+  );
+};
+
+const StatusBadge = ({ status }) => {
+  const cfg = {
+    'not-started': { label: 'Not started', bg: 'var(--bg)',     color: 'var(--ink-2)',    border: 'var(--line-strong)' },
+    'in-progress': { label: 'In progress', bg: '#FFF4E0',       color: '#92580A',         border: '#F2D9A6' },
+    'completed':   { label: 'Completed',   bg: '#EAF3F1',       color: 'var(--teal-deep)', border: '#D4E8E4' },
+  }[status || 'not-started'];
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 8,
+      padding: '6px 12px', borderRadius: 999,
+      background: cfg.bg, color: cfg.color,
+      border: `1px solid ${cfg.border}`,
+      fontSize: 14, fontWeight: 600,
+    }}>
+      {status === 'completed' && <CheckIcon size={14}/>}
+      {status === 'in-progress' && <span style={{ width: 8, height: 8, borderRadius: 999, background: cfg.color }}/>}
+      {(!status || status === 'not-started') && <span style={{ width: 8, height: 8, borderRadius: 999, border: `1.5px solid ${cfg.color}` }}/>}
+      {cfg.label}
+    </span>
+  );
+};
+
+const ModuleCard = ({ mod, status, recommended, onOpen }) => {
+  const pct = status === 'completed' ? 100 : status === 'in-progress' ? 40 : 0;
+  return (
+    <div
+      style={{
+        background: '#fff',
+        border: recommended ? '2px solid var(--teal)' : '1px solid var(--line)',
+        borderRadius: 20, padding: 28,
+        boxShadow: recommended ? '0 0 0 6px rgba(42,157,143,0.1)' : 'var(--shadow-card)',
+        display: 'flex', flexDirection: 'column', minHeight: 320,
+        position: 'relative',
+      }}
+    >
+      {recommended && (
+        <div style={{
+          position: 'absolute', top: -14, left: 24,
+          background: 'var(--teal)', color: '#fff',
+          padding: '6px 14px', borderRadius: 999,
+          fontSize: 14, fontWeight: 700, letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+        }}>
+          Recommended
+        </div>
+      )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: 16,
+          background: 'var(--navy)', color: '#fff',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <ModuleGlyph n={mod.n} size={30} color="#fff"/>
+        </div>
+        <div style={{ fontSize: 14, color: 'var(--muted)', fontWeight: 600, letterSpacing: '0.06em' }}>MODULE {mod.n}</div>
+      </div>
+      <div style={{
+        fontFamily: 'var(--f-display)', fontSize: 24, fontWeight: 700,
+        color: 'var(--navy-ink)', letterSpacing: '-0.01em',
+        margin: '0 0 10px', textWrap: 'balance',
+      }}>
+        {mod.title}
+      </div>
+      <div style={{ fontSize: 17, color: 'var(--ink-2)', lineHeight: 1.5, marginBottom: 20, flex: 1 }}>
+        {mod.blurb}
+      </div>
+      <div style={{ fontSize: 15, color: 'var(--muted)', fontWeight: 500, marginBottom: 14 }}>
+        {mod.lessons} lessons · {mod.minutes} min
+      </div>
+      {status === 'in-progress' && (
+        <div style={{ height: 6, background: 'var(--line)', borderRadius: 999, marginBottom: 14, overflow: 'hidden' }}>
+          <div style={{ width: `${pct}%`, height: '100%', background: 'var(--teal)' }}/>
+        </div>
+      )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <StatusBadge status={status}/>
+        <Button
+          size="sm"
+          variant={recommended ? 'teal' : 'outline'}
+          onClick={onOpen}
+        >
+          {status === 'completed' ? 'Review' : status === 'in-progress' ? 'Continue' : 'Start'} <ArrowRight size={18}/>
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const ModuleRow = ({ mod, status, recommended, onOpen }) => {
+  return (
+    <div style={{
+      background: '#fff',
+      border: recommended ? '2px solid var(--teal)' : '1px solid var(--line)',
+      borderRadius: 20, padding: '22px 28px',
+      display: 'flex', alignItems: 'center', gap: 24,
+      boxShadow: recommended ? '0 0 0 6px rgba(42,157,143,0.1)' : 'var(--shadow-card)',
+    }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: 16,
+        background: 'var(--navy)', color: '#fff',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        <ModuleGlyph n={mod.n} size={30} color="#fff"/>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 4 }}>
+          <span style={{ fontSize: 14, color: 'var(--muted)', fontWeight: 600, letterSpacing: '0.06em' }}>MODULE {mod.n}</span>
+          {recommended && <span style={{ fontSize: 13, color: 'var(--teal-deep)', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>· Recommended</span>}
+        </div>
+        <div style={{ fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-ink)', letterSpacing: '-0.01em' }}>
+          {mod.title}
+        </div>
+        <div style={{ fontSize: 16, color: 'var(--ink-2)', marginTop: 2 }}>
+          {mod.blurb}
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
+        <StatusBadge status={status}/>
+        <Button size="sm" variant={recommended ? 'teal' : 'outline'} onClick={onOpen}>
+          {status === 'completed' ? 'Review' : status === 'in-progress' ? 'Continue' : 'Start'} <ArrowRight size={18}/>
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// =============================================================
+// Module 2 — Spot the Red Flags
+// =============================================================
+
+const RED_FLAGS = [
+  {
+    n: 1,
+    title: "Urgency",
+    blurb: "Scams pressure you to act immediately, so you don't have time to think clearly or check with someone you trust.",
+    example: '"Your account will be locked in 24 hours unless you verify now!"',
+    glyph: (c) => (
+      <svg width="36" height="36" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="18" stroke={c} strokeWidth="2.5"/><path d="M24 14 V24 L31 28" stroke={c} strokeWidth="2.5" strokeLinecap="round"/></svg>
+    ),
+  },
+  {
+    n: 2,
+    title: "Sender mismatch",
+    blurb: "The sender's email address doesn't match the real organization. Real companies use their own domain — not Gmail, Yahoo, or a close-but-wrong spelling.",
+    example: "bankofamerica-security@gmail.com  ✗  instead of  @bankofamerica.com  ✓",
+    glyph: (c) => (
+      <svg width="36" height="36" viewBox="0 0 48 48" fill="none"><rect x="6" y="12" width="36" height="24" rx="3" stroke={c} strokeWidth="2.5"/><path d="M6 14 L24 28 L42 14" stroke={c} strokeWidth="2.5" strokeLinejoin="round"/></svg>
+    ),
+  },
+  {
+    n: 3,
+    title: "Too personal",
+    blurb: "AI can pull your name, city, or recent purchases from public information to make a scam feel personally written for you. Specifics alone don't prove it's real.",
+    example: '"Hi Margaret — about your recent order in Portland…"',
+    glyph: (c) => (
+      <svg width="36" height="36" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="18" r="7" stroke={c} strokeWidth="2.5"/><path d="M10 40 C10 31 16 26 24 26 C32 26 38 31 38 40" stroke={c} strokeWidth="2.5" strokeLinecap="round"/></svg>
+    ),
+  },
+  {
+    n: 4,
+    title: "Emotional manipulation",
+    blurb: "Messages designed to trigger fear, excitement, or sympathy short-circuit careful thinking. Strong feelings are the point — notice them and slow down.",
+    example: '"Grandma, I\'m in trouble and I don\'t know who else to call…"',
+    glyph: (c) => (
+      <svg width="36" height="36" viewBox="0 0 48 48" fill="none"><path d="M24 40 C10 30 6 22 10 16 C14 10 22 12 24 18 C26 12 34 10 38 16 C42 22 38 30 24 40 Z" stroke={c} strokeWidth="2.5" strokeLinejoin="round"/></svg>
+    ),
+  },
+];
+
+const Module2 = ({ onNav, onComplete }) => {
+  // screens: lesson | exercise | correct | incorrect | explanation | summary
+  const [screen, setScreen] = React.useState('lesson');
+  const [attempts, setAttempts] = React.useState(0);
+  const [showNudge, setShowNudge] = React.useState(false);
+
+  const back = (
+    <button onClick={() => onNav('dashboard')} style={{
+      background: 'transparent', border: 'none', cursor: 'pointer',
+      color: 'var(--ink-2)', fontSize: 17, fontFamily: 'inherit',
+      display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 0', marginBottom: 20,
+    }}>
+      <ArrowLeft size={18}/> Back to My Learning
+    </button>
+  );
+
+  if (screen === 'lesson') return <Module2Lesson back={back} onStart={() => setScreen('exercise')}/>;
+  if (screen === 'exercise') return (
+    <Module2Exercise
+      back={back}
+      attempts={attempts}
+      onAnswer={(isFake) => {
+        setAttempts(a => a + 1);
+        setScreen(isFake ? 'correct' : 'incorrect');
+      }}
+    />
+  );
+  if (screen === 'correct') return (
+    <Module2Result
+      kind="correct"
+      back={back}
+      onNext={() => setScreen('summary')}
+      onReview={() => setScreen('lesson')}
+    />
+  );
+  if (screen === 'summary') return (
+    <Module2Summary back={back} onContinue={() => { onComplete(); onNav('dashboard'); }}/>
+  );
+  if (screen === 'incorrect') return (
+    <>
+      <Module2Incorrect
+        back={back}
+        onAction={(a) => {
+          if (a === 'explain') setScreen('explanation');
+          else if (a === 'hint' || a === 'retry') setScreen('exercise');
+          else if (a === 'lesson') setScreen('lesson');
+          else if (a === 'skip') {
+            // Skipping after wrong — show gentle nudge
+            setShowNudge(true);
+          }
+        }}
+      />
+      {showNudge && (
+        <NudgeModal
+          onYes={() => { setShowNudge(false); setScreen('explanation'); }}
+          onNo={()  => { setShowNudge(false); setScreen('summary'); }}
+        />
+      )}
+    </>
+  );
+  if (screen === 'explanation') return (
+    <Module2Explanation back={back} onNext={() => setScreen('exercise')}/>
+  );
+  return null;
+};
+
+// --- Lesson screen ---
+const Module2Lesson = ({ back, onStart }) => (
+  <main style={{ maxWidth: 880, margin: '0 auto', padding: '40px 40px 80px' }}>
+    {back}
+    <div style={{ color: 'var(--teal-deep)', fontSize: 15, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>
+      Module 2 · Lesson
+    </div>
+    <h1 style={{
+      fontFamily: 'var(--f-display)',
+      fontSize: 'clamp(36px, 4.4vw, 52px)',
+      letterSpacing: '-0.02em', lineHeight: 1.05,
+      color: 'var(--navy-ink)', fontWeight: 700, margin: '0 0 20px',
+      textWrap: 'balance',
+    }}>
+      Spot the Red Flags.
+    </h1>
+    <p style={{ fontSize: 22, color: 'var(--ink-2)', lineHeight: 1.5, margin: '0 0 40px', maxWidth: 700 }}>
+      In this module, you'll learn to identify warning signs in emails, phone calls,
+      and messages that may indicate an AI-powered scam.
+    </p>
+
+    <div style={{ display: 'grid', gap: 20, marginBottom: 40 }}>
+      {RED_FLAGS.map(rf => (
+        <div key={rf.n} style={{
+          background: '#fff', border: '1px solid var(--line)',
+          borderRadius: 20, padding: '28px 32px',
+          boxShadow: 'var(--shadow-card)',
+          display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 24,
+        }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: 16,
+            background: '#FDECEB', color: '#B9322E',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: '1px solid #F5CFCD',
+          }}>
+            {rf.glyph('currentColor')}
+          </div>
+          <div>
+            <div style={{ fontSize: 14, color: '#B9322E', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
+              Red Flag #{rf.n}
+            </div>
+            <div style={{ fontFamily: 'var(--f-display)', fontSize: 26, fontWeight: 700, color: 'var(--navy-ink)', letterSpacing: '-0.01em', marginBottom: 10 }}>
+              {rf.title}
+            </div>
+            <div style={{ fontSize: 18, color: 'var(--ink-2)', lineHeight: 1.55, marginBottom: 14 }}>
+              {rf.blurb}
+            </div>
+            <div style={{
+              background: 'var(--bg)', border: '1px solid var(--line)',
+              borderRadius: 12, padding: '14px 18px',
+              fontSize: 17, color: 'var(--ink)',
+              fontStyle: 'italic',
+            }}>
+              <span style={{ fontStyle: 'normal', fontSize: 13, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.06em', textTransform: 'uppercase', marginRight: 10 }}>Example</span>
+              {rf.example}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div style={{
+      background: '#fff', border: '1px solid var(--line)',
+      borderRadius: 20, padding: '24px 28px',
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      gap: 16, flexWrap: 'wrap',
+    }}>
+      <div>
+        <div style={{ fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-ink)' }}>Ready to practice?</div>
+        <div style={{ fontSize: 17, color: 'var(--ink-2)' }}>You'll look at a real-looking email and decide if it's genuine.</div>
+      </div>
+      <Button variant="primary" onClick={onStart}>Start practice <ArrowRight/></Button>
+    </div>
+  </main>
+);
+
+// --- The suspicious email mock ---
+const SuspiciousEmail = ({ annotated = false }) => (
+  <div style={{
+    background: '#fff', border: '1px solid var(--line)',
+    borderRadius: 18, boxShadow: 'var(--shadow-card)',
+    overflow: 'visible', position: 'relative',
+  }}>
+    {/* inbox toolbar */}
+    <div style={{
+      display: 'flex', gap: 10, alignItems: 'center',
+      padding: '14px 20px', borderBottom: '1px solid var(--line)',
+      background: '#F6F4EE', color: 'var(--muted)', fontSize: 14,
+      borderTopLeftRadius: 18, borderTopRightRadius: 18,
+    }}>
+      <span style={{ width: 10, height: 10, borderRadius: 999, background: '#E55A5A' }}/>
+      <span style={{ width: 10, height: 10, borderRadius: 999, background: '#F2B441' }}/>
+      <span style={{ width: 10, height: 10, borderRadius: 999, background: '#7FB26A' }}/>
+      <span style={{ marginLeft: 12 }}>Inbox · Today 9:47 AM</span>
+    </div>
+
+    <div style={{ padding: '28px 32px' }}>
+      {/* subject */}
+      <div style={{
+        fontFamily: 'var(--f-display)', fontSize: 26, fontWeight: 700,
+        color: 'var(--navy-ink)', letterSpacing: '-0.01em',
+        marginBottom: 16, lineHeight: 1.2,
+      }}>
+        Urgent: Your Account Has Been Compromised
+      </div>
+
+      {/* sender row */}
+      <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 20, position: 'relative' }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 999,
+          background: '#E7EEF6', color: 'var(--navy)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontWeight: 700, fontSize: 16,
+        }}>BA</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--navy-ink)' }}>BankofAmerica Security</div>
+          <div id="email-sender" style={{
+            fontSize: 15, color: 'var(--muted)',
+            display: 'inline-block',
+            padding: annotated ? '2px 6px' : 0,
+            borderRadius: 4,
+            background: annotated ? '#FDECEB' : 'transparent',
+            outline: annotated ? '2px solid #B9322E' : 'none',
+          }}>
+            &lt;boa-verify@gmail.com&gt;
+          </div>
+        </div>
+        <div style={{ fontSize: 14, color: 'var(--muted)' }}>to me</div>
+        {annotated && (
+          <Annotation style={{ top: 30, right: -20, transform: 'translateX(100%)' }}>
+            This is a <strong>Gmail address</strong>, not an official bank address.
+          </Annotation>
+        )}
+      </div>
+
+      <div style={{ height: 1, background: 'var(--line)', margin: '0 -32px 20px' }}/>
+
+      {/* body */}
+      <div style={{ fontSize: 18, lineHeight: 1.6, color: 'var(--ink)' }}>
+        <p id="email-greeting" style={{
+          margin: '0 0 14px',
+          display: 'inline-block',
+          padding: annotated ? '2px 6px' : 0,
+          borderRadius: 4,
+          background: annotated ? '#FDECEB' : 'transparent',
+          outline: annotated ? '2px solid #B9322E' : 'none',
+          position: 'relative',
+        }}>
+          Dear Customer,
+          {annotated && (
+            <Annotation style={{ top: 0, left: '100%', marginLeft: 20 }}>
+              Banks usually address you by your <strong>full name on file</strong>, not "Customer."
+            </Annotation>
+          )}
+        </p>
+
+        <p style={{ margin: '0 0 14px' }}>
+          <span id="email-urgent" style={{
+            padding: annotated ? '2px 6px' : 0,
+            borderRadius: 4,
+            background: annotated ? '#FDECEB' : 'transparent',
+            outline: annotated ? '2px solid #B9322E' : 'none',
+          }}>
+            We detected unusual activity on your account. <strong>Your account will be locked in 24 hours</strong> unless you verify your identity immediately.
+          </span>
+        </p>
+        <p style={{ margin: '0 0 18px' }}>
+          Failure to act will result in permanent suspension and possible loss of funds. Please click the secure link below to restore access.
+        </p>
+        {annotated && (
+          <div style={{ position: 'relative', marginBottom: 18 }}>
+            <Annotation style={{ top: -56, right: 0 }}>
+              Scammers use <strong>urgency</strong> to stop you thinking carefully.
+            </Annotation>
+          </div>
+        )}
+
+        <a href="#" onClick={(e) => e.preventDefault()} style={{
+          display: 'inline-flex', alignItems: 'center', gap: 10,
+          background: '#C53030', color: '#fff',
+          padding: '14px 24px', borderRadius: 8,
+          textDecoration: 'none', fontWeight: 600, fontSize: 17,
+          marginBottom: 18,
+        }}>
+          Verify Your Identity Now <ArrowRight size={18}/>
+        </a>
+
+        <p style={{ margin: '0 0 10px', color: 'var(--ink-2)', fontSize: 17 }}>
+          Thank you for banking with us.
+        </p>
+        <p style={{ margin: 0, color: 'var(--muted)', fontSize: 15 }}>
+          — Bank of America Security Team
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+const Annotation = ({ children, style }) => (
+  <div style={{
+    position: 'absolute', zIndex: 2,
+    background: '#B9322E', color: '#fff',
+    padding: '10px 14px', borderRadius: 10,
+    fontSize: 14, lineHeight: 1.4, fontWeight: 500,
+    maxWidth: 240, boxShadow: '0 6px 16px rgba(185,50,46,0.25)',
+    ...style,
+  }}>
+    {children}
+  </div>
+);
+
+// --- Exercise screen ---
+const Module2Exercise = ({ back, attempts, onAnswer }) => (
+  <main style={{ maxWidth: 900, margin: '0 auto', padding: '40px 40px 80px' }}>
+    {back}
+    <div style={{ color: 'var(--teal-deep)', fontSize: 15, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>
+      Module 2 · Practice exercise {attempts > 0 && <span style={{ color: 'var(--muted)' }}>· Attempt {attempts + 1}</span>}
+    </div>
+    <h1 style={{
+      fontFamily: 'var(--f-display)',
+      fontSize: 'clamp(30px, 3.6vw, 42px)',
+      letterSpacing: '-0.02em', lineHeight: 1.1,
+      color: 'var(--navy-ink)', fontWeight: 700, margin: '0 0 14px',
+      textWrap: 'balance',
+    }}>
+      Does this email look real, or fake?
+    </h1>
+    <p style={{ fontSize: 19, color: 'var(--ink-2)', margin: '0 0 28px' }}>
+      Take your time. Look carefully at the email before deciding.
+    </p>
+
+    <div style={{ marginBottom: 32 }}>
+      <SuspiciousEmail/>
+    </div>
+
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <button
+        onClick={() => onAnswer(false)}
+        style={{
+          minHeight: 88, borderRadius: 16, cursor: 'pointer',
+          background: '#fff', border: '2px solid var(--line-strong)',
+          fontFamily: 'inherit', fontSize: 21, fontWeight: 600,
+          color: 'var(--navy-ink)', padding: '0 24px',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--navy)'}
+        onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--line-strong)'}
+      >
+        <span>This looks real</span>
+        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--muted)', marginTop: 4 }}>Probably legitimate</span>
+      </button>
+      <button
+        onClick={() => onAnswer(true)}
+        style={{
+          minHeight: 88, borderRadius: 16, cursor: 'pointer',
+          background: '#fff', border: '2px solid var(--line-strong)',
+          fontFamily: 'inherit', fontSize: 21, fontWeight: 600,
+          color: 'var(--navy-ink)', padding: '0 24px',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--navy)'}
+        onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--line-strong)'}
+      >
+        <span>This looks fake</span>
+        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--muted)', marginTop: 4 }}>Probably a scam</span>
+      </button>
+    </div>
+  </main>
+);
+
+// --- Correct result ---
+const Module2Result = ({ back, onNext, onReview }) => (
+  <main style={{ maxWidth: 880, margin: '0 auto', padding: '40px 40px 80px' }}>
+    {back}
+    <div style={{
+      background: '#EAF3F1', border: '2px solid var(--teal)',
+      borderRadius: 20, padding: '24px 28px', marginBottom: 28,
+      display: 'flex', alignItems: 'center', gap: 16,
+    }}>
+      <div style={{
+        width: 48, height: 48, borderRadius: 999,
+        background: 'var(--teal)', color: '#fff',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        <CheckIcon size={26}/>
+      </div>
+      <div>
+        <div style={{ fontFamily: 'var(--f-display)', fontSize: 28, fontWeight: 700, color: 'var(--teal-deep)' }}>Correct!</div>
+        <div style={{ fontSize: 17, color: 'var(--ink-2)' }}>You spotted the red flags.</div>
+      </div>
+    </div>
+
+    <div style={{
+      background: '#fff', border: '1px solid var(--line)',
+      borderRadius: 20, padding: '28px 32px', marginBottom: 32,
+      boxShadow: 'var(--shadow-card)',
+    }}>
+      <div style={{ fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-ink)', marginBottom: 10 }}>
+        Good catch.
+      </div>
+      <p style={{ fontSize: 19, color: 'var(--ink-2)', lineHeight: 1.55, margin: '0 0 16px' }}>
+        The sender's address <strong style={{ color: 'var(--ink)' }}>boa-verify@gmail.com</strong> is not an
+        official Bank of America address — real banks never use Gmail. The urgent "24 hours or
+        else" tone is also a classic red flag designed to rush you.
+      </p>
+      <div style={{ display: 'grid', gap: 10 }}>
+        {[
+          ['Sender mismatch', 'Gmail, not a bank domain'],
+          ['Urgency', '"Locked in 24 hours"'],
+          ['Generic greeting', '"Dear Customer"'],
+        ].map(([a, b]) => (
+          <div key={a} style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <span style={{ width: 24, height: 24, borderRadius: 999, background: 'var(--teal)', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><CheckIcon size={14}/></span>
+            <span style={{ fontSize: 17 }}><strong style={{ color: 'var(--navy-ink)' }}>{a}</strong> — <span style={{ color: 'var(--ink-2)' }}>{b}</span></span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+      <Button variant="primary" onClick={onNext}>Next exercise <ArrowRight/></Button>
+      <Button variant="outline" onClick={onReview}>Review the red flags</Button>
+    </div>
+  </main>
+);
+
+// --- Incorrect + 5 post-error actions ---
+const Module2Incorrect = ({ back, onAction }) => {
+  const options = [
+    { id: 'explain', title: 'View Explanation',         sub: 'See why this email is fake',       icon: 'lightbulb' },
+    { id: 'hint',    title: 'Get a Hint & Try Again',   sub: 'Receive a clue, then retry',       icon: 'refresh' },
+    { id: 'retry',   title: 'Try Again Without Help',   sub: 'Attempt the same exercise again',  icon: 'redo' },
+    { id: 'lesson',  title: 'Go Back to the Lesson',    sub: 'Return to the instructional page', icon: 'book' },
+    { id: 'skip',    title: 'Skip to Next Exercise',    sub: 'Move on for now',                  icon: 'forward' },
+  ];
+  return (
+    <main style={{ maxWidth: 880, margin: '0 auto', padding: '40px 40px 80px' }}>
+      {back}
+      <div style={{
+        background: '#FFF4E0', border: '2px solid #E09A2B',
+        borderRadius: 20, padding: '24px 28px', marginBottom: 28,
+        display: 'flex', alignItems: 'center', gap: 16,
+      }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: 999,
+          background: '#E09A2B', color: '#fff',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          fontWeight: 700, fontSize: 22,
+        }}>!</div>
+        <div>
+          <div style={{ fontFamily: 'var(--f-display)', fontSize: 26, fontWeight: 700, color: '#7A4A08' }}>Not quite. Let's take another look.</div>
+          <div style={{ fontSize: 17, color: '#7A4A08' }}>This email is actually a scam — but that's what makes this practice worthwhile.</div>
+        </div>
+      </div>
+
+      <div style={{ fontSize: 19, color: 'var(--ink-2)', margin: '0 0 20px' }}>
+        What would you like to do next?
+      </div>
+
+      <div style={{ display: 'grid', gap: 14, marginBottom: 24 }}>
+        {options.map(o => (
+          <ActionRow key={o.id} icon={o.icon} title={o.title} sub={o.sub} onClick={() => onAction(o.id)}/>
+        ))}
+      </div>
+    </main>
+  );
+};
+
+const ActionIcon = ({ name, color = 'currentColor' }) => {
+  const common = { width: 28, height: 28, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" };
+  if (name === 'lightbulb') return (<svg {...common}><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2Z"/></svg>);
+  if (name === 'refresh')   return (<svg {...common}><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>);
+  if (name === 'redo')      return (<svg {...common}><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg>);
+  if (name === 'book')      return (<svg {...common}><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Z"/><path d="M4 5v16"/></svg>);
+  if (name === 'forward')   return (<svg {...common}><path d="M5 12h14M13 5l7 7-7 7"/></svg>);
+  return null;
+};
+
+const ActionRow = ({ icon, title, sub, onClick }) => (
+  <button
+    onClick={onClick}
+    style={{
+      textAlign: 'left', cursor: 'pointer',
+      background: '#fff', border: '2px solid var(--line-strong)',
+      borderRadius: 16, padding: '20px 24px',
+      display: 'flex', alignItems: 'center', gap: 20,
+      fontFamily: 'inherit',
+      transition: 'all .12s ease',
+    }}
+    onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--navy)'}
+    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--line-strong)'}
+  >
+    <span style={{
+      width: 52, height: 52, borderRadius: 14,
+      background: '#E7EEF6', color: 'var(--navy)',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    }}>
+      <ActionIcon name={icon}/>
+    </span>
+    <span style={{ flex: 1 }}>
+      <span style={{ display: 'block', fontFamily: 'var(--f-display)', fontSize: 20, fontWeight: 700, color: 'var(--navy-ink)', letterSpacing: '-0.005em' }}>{title}</span>
+      <span style={{ display: 'block', fontSize: 16, color: 'var(--ink-2)', marginTop: 2 }}>{sub}</span>
+    </span>
+    <ArrowRight size={20}/>
+  </button>
+);
+
+// --- Explanation screen with annotations ---
+const Module2Explanation = ({ back, onNext }) => (
+  <main style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 40px 80px' }}>
+    {back}
+    <div style={{ color: 'var(--teal-deep)', fontSize: 15, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>
+      Module 2 · Walkthrough
+    </div>
+    <h1 style={{
+      fontFamily: 'var(--f-display)',
+      fontSize: 'clamp(32px, 3.8vw, 44px)',
+      letterSpacing: '-0.02em', lineHeight: 1.08,
+      color: 'var(--navy-ink)', fontWeight: 700, margin: '0 0 14px',
+      textWrap: 'balance',
+    }}>
+      Here's what to look for.
+    </h1>
+    <p style={{ fontSize: 19, color: 'var(--ink-2)', margin: '0 0 28px', maxWidth: 700 }}>
+      Three details in this email give it away. We've highlighted each one — take a moment to read the notes.
+    </p>
+
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 340px)',
+      gap: 32, alignItems: 'start',
+    }}>
+      <div><SuspiciousEmail annotated={false}/></div>
+      <div style={{ display: 'grid', gap: 14, position: 'sticky', top: 100 }}>
+        <ExplainCard n={1} title="Sender address" body="The sender uses boa-verify@gmail.com. Real banks never use Gmail — always check the domain after the @ sign."/>
+        <ExplainCard n={2} title="Urgent language" body='"Locked in 24 hours" is meant to rush you. Scammers use urgency to stop you thinking carefully.'/>
+        <ExplainCard n={3} title="Generic greeting" body='"Dear Customer" is a giveaway. Banks usually address you by your full name on file.'/>
+      </div>
+    </div>
+
+    <div style={{ marginTop: 40, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+      <Button variant="primary" onClick={onNext}>Try a similar exercise <ArrowRight/></Button>
+    </div>
+  </main>
+);
+
+const ExplainCard = ({ n, title, body }) => (
+  <div style={{
+    background: '#fff', border: '1px solid var(--line)',
+    borderRadius: 16, padding: '18px 20px',
+    boxShadow: 'var(--shadow-card)',
+    display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 14,
+  }}>
+    <div style={{
+      width: 34, height: 34, borderRadius: 999,
+      background: '#B9322E', color: '#fff',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontWeight: 700, fontSize: 16,
+    }}>{n}</div>
+    <div>
+      <div style={{ fontFamily: 'var(--f-display)', fontSize: 18, fontWeight: 700, color: 'var(--navy-ink)' }}>{title}</div>
+      <div style={{ fontSize: 16, color: 'var(--ink-2)', lineHeight: 1.5, marginTop: 4 }}>{body}</div>
+    </div>
+  </div>
+);
+
+// =============================================================
+// Module 1 — What Is AI?
+// =============================================================
+
+const M1_EXAMPLES = [
+  { title: "Voice assistants",    sub: "Siri, Alexa, Google Assistant listen and answer your questions.", icon: 'mic' },
+  { title: "Recommendations",     sub: "Netflix, YouTube, and Amazon suggest what you might like.", icon: 'sparkle' },
+  { title: "Spam filters",        sub: "Your email inbox quietly sets aside junk mail for you.", icon: 'mail' },
+  { title: "Auto-complete",       sub: "Your phone finishes words and sentences as you type.", icon: 'keyboard' },
+  { title: "Photo search",        sub: '"Show me photos of the dog" — your phone can find them.', icon: 'photo' },
+];
+
+const M1_QUIZ = [
+  { id: 'siri',    label: 'Siri',                    isAI: true  },
+  { id: 'toaster', label: 'A toaster',               isAI: false },
+  { id: 'netflix', label: 'Netflix recommendations', isAI: true  },
+  { id: 'book',    label: 'A paper book',            isAI: false },
+  { id: 'spam',    label: 'Email spam filter',       isAI: true  },
+  { id: 'watch',   label: 'A wind-up wristwatch',    isAI: false },
+];
+
+const M1Icon = ({ name, c = 'currentColor' }) => {
+  const p = { width: 32, height: 32, viewBox: "0 0 24 24", fill: "none", stroke: c, strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" };
+  if (name === 'mic') return (<svg {...p}><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>);
+  if (name === 'sparkle') return (<svg {...p}><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/><path d="M6 6l3 3M15 15l3 3M6 18l3-3M15 9l3-3"/></svg>);
+  if (name === 'mail') return (<svg {...p}><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 7 9-7"/></svg>);
+  if (name === 'keyboard') return (<svg {...p}><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>);
+  if (name === 'photo') return (<svg {...p}><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-4 5 4 3-2 5 3"/></svg>);
+  return null;
+};
+
+const Module1 = ({ onNav, onComplete }) => {
+  const [screen, setScreen] = React.useState('lesson');
+  const [picks, setPicks] = React.useState({});
+  const [submitted, setSubmitted] = React.useState(false);
+
+  const back = <BackBar onBack={() => onNav('dashboard')}/>;
+
+  if (screen === 'lesson') return (
+    <main style={{ maxWidth: 900, margin: '0 auto', padding: '40px 40px 80px' }}>
+      {back}
+      <Eyebrow>Module 1 · Lesson</Eyebrow>
+      <BigTitle>AI is already part of your day.</BigTitle>
+      <Lede>You've probably used AI many times without thinking about it. It's the quiet helper inside things you already use — answering, filtering, suggesting.</Lede>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 40 }}>
+        {M1_EXAMPLES.map(e => (
+          <div key={e.title} style={{
+            background: '#fff', border: '1px solid var(--line)',
+            borderRadius: 18, padding: '22px 22px',
+            boxShadow: 'var(--shadow-card)',
+          }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: 14,
+              background: '#E7EEF6', color: 'var(--navy)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 14,
+            }}>
+              <M1Icon name={e.icon}/>
+            </div>
+            <div style={{ fontFamily: 'var(--f-display)', fontSize: 20, fontWeight: 700, color: 'var(--navy-ink)', marginBottom: 6 }}>{e.title}</div>
+            <div style={{ fontSize: 16, color: 'var(--ink-2)', lineHeight: 1.5 }}>{e.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      <CTACard onStart={() => setScreen('exercise')} label="Start practice" title="Let's try it." sub="Pick the items that use AI. Take your time."/>
+    </main>
+  );
+
+  if (screen === 'exercise') return (
+    <main style={{ maxWidth: 900, margin: '0 auto', padding: '40px 40px 80px' }}>
+      {back}
+      <Eyebrow>Module 1 · Practice exercise</Eyebrow>
+      <BigTitle>Which of these use AI?</BigTitle>
+      <Lede>Tap each item that uses AI. Pick as many as you think apply.</Lede>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14, marginBottom: 32 }}>
+        {M1_QUIZ.map(q => {
+          const chosen = !!picks[q.id];
+          const correct = submitted && chosen === q.isAI;
+          const wrong = submitted && chosen !== q.isAI;
+          return (
+            <button
+              key={q.id}
+              onClick={() => !submitted && setPicks(p => ({ ...p, [q.id]: !p[q.id] }))}
+              disabled={submitted}
+              style={{
+                textAlign: 'left', cursor: submitted ? 'default' : 'pointer',
+                padding: '22px 24px', minHeight: 80,
+                borderRadius: 14,
+                background: submitted ? (correct ? '#EAF3F1' : wrong ? '#FDECEB' : '#fff') : (chosen ? '#EAF3F1' : '#fff'),
+                border: `2px solid ${submitted ? (correct ? 'var(--teal)' : wrong ? '#C53030' : 'var(--line-strong)') : (chosen ? 'var(--teal)' : 'var(--line-strong)')}`,
+                fontFamily: 'inherit', fontSize: 20, fontWeight: 600, color: 'var(--navy-ink)',
+                display: 'flex', alignItems: 'center', gap: 14,
+              }}
+            >
+              <span style={{
+                width: 24, height: 24, borderRadius: 6,
+                border: `2px solid ${chosen ? 'var(--teal)' : 'var(--line-strong)'}`,
+                background: chosen ? 'var(--teal)' : '#fff',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0,
+              }}>{chosen && <CheckIcon size={16}/>}</span>
+              <span style={{ flex: 1 }}>{q.label}</span>
+              {submitted && (correct ? <span style={{ color: 'var(--teal-deep)', fontSize: 15, fontWeight: 700 }}>✓ Correct</span>
+                : wrong ? <span style={{ color: '#C53030', fontSize: 15, fontWeight: 700 }}>{q.isAI ? 'Uses AI' : 'No AI'}</span> : null)}
+            </button>
+          );
+        })}
+      </div>
+
+      {!submitted ? (
+        <Button variant="primary" onClick={() => setSubmitted(true)}>Check my answers <ArrowRight/></Button>
+      ) : (
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+          <Button variant="primary" onClick={() => { onComplete(); onNav('dashboard'); }}>Finish module <ArrowRight/></Button>
+          <Button variant="outline" onClick={() => { setPicks({}); setSubmitted(false); }}>Try again</Button>
+        </div>
+      )}
+    </main>
+  );
+  return null;
+};
+
+// =============================================================
+// Module 3 — Verify Before You Trust
+// =============================================================
+
+const M3_STRATEGIES = [
+  { title: "Hang up and call back", body: "If a \"family member\" calls asking for money, hang up and dial their real number. A real loved one won't mind.", icon: 'phone' },
+  { title: "Check the URL",         body: "Hover over any link before clicking. Look for misspellings — amaz0n.com is not amazon.com.", icon: 'link' },
+  { title: "Search independently",  body: "Don't click links in emails. Open your browser and go to the website directly.", icon: 'search' },
+  { title: "Use a family code word", body: "Agree on a secret word with family. In a real emergency, they'll know it. Scammers won't.", icon: 'key' },
+];
+
+const M3Icon = ({ name, c = 'currentColor' }) => {
+  const p = { width: 32, height: 32, viewBox: "0 0 24 24", fill: "none", stroke: c, strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" };
+  if (name === 'phone') return (<svg {...p}><path d="M22 16.9V19a2 2 0 0 1-2.2 2A19.9 19.9 0 0 1 3 4.2 2 2 0 0 1 5 2h2.1a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.4 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>);
+  if (name === 'link') return (<svg {...p}><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>);
+  if (name === 'search') return (<svg {...p}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>);
+  if (name === 'key') return (<svg {...p}><circle cx="8" cy="12" r="4"/><path d="M12 12h10M18 12v4M22 12v3"/></svg>);
+  return null;
+};
+
+const M3_OPTS = [
+  { id: 'send',   label: "Send the money immediately",                     correct: false },
+  { id: 'call',   label: "Call your grandchild's real phone number",        correct: true  },
+  { id: 'police', label: "Call the police",                                 correct: false },
+  { id: 'ignore', label: "Ignore it",                                       correct: false },
+];
+
+const Module3 = ({ onNav, onComplete }) => {
+  const [screen, setScreen] = React.useState('lesson');
+  const [pick, setPick] = React.useState(null);
+  const [submitted, setSubmitted] = React.useState(false);
+  const back = <BackBar onBack={() => onNav('dashboard')}/>;
+
+  if (screen === 'lesson') return (
+    <main style={{ maxWidth: 900, margin: '0 auto', padding: '40px 40px 80px' }}>
+      {back}
+      <Eyebrow>Module 3 · Lesson</Eyebrow>
+      <BigTitle>Verify before you trust.</BigTitle>
+      <Lede>A real person or real bank will always wait for you to check. These four habits stop almost every scam cold.</Lede>
+
+      <div style={{ display: 'grid', gap: 16, marginBottom: 40 }}>
+        {M3_STRATEGIES.map((s, i) => (
+          <div key={s.title} style={{
+            background: '#fff', border: '1px solid var(--line)',
+            borderRadius: 18, padding: '22px 26px',
+            boxShadow: 'var(--shadow-card)',
+            display: 'grid', gridTemplateColumns: 'auto auto 1fr', gap: 18, alignItems: 'center',
+          }}>
+            <div style={{
+              fontFamily: 'var(--f-display)', fontSize: 30, fontWeight: 700,
+              color: 'var(--muted)', width: 40, textAlign: 'center',
+              fontVariantNumeric: 'tabular-nums',
+            }}>{i + 1}</div>
+            <div style={{
+              width: 52, height: 52, borderRadius: 14,
+              background: '#E7EEF6', color: 'var(--navy)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <M3Icon name={s.icon}/>
+            </div>
+            <div>
+              <div style={{ fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-ink)', marginBottom: 4 }}>{s.title}</div>
+              <div style={{ fontSize: 17, color: 'var(--ink-2)', lineHeight: 1.5 }}>{s.body}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <CTACard onStart={() => setScreen('exercise')} label="Start practice" title="A scenario to try." sub="You'll hear a voicemail and decide what to do first."/>
+    </main>
+  );
+
+  if (screen === 'exercise') {
+    const chosen = M3_OPTS.find(o => o.id === pick);
+    return (
+      <main style={{ maxWidth: 900, margin: '0 auto', padding: '40px 40px 80px' }}>
+        {back}
+        <Eyebrow>Module 3 · Practice exercise</Eyebrow>
+        <BigTitle>What should you do first?</BigTitle>
+        <Lede>You just received this voicemail from an unknown number. Your grandchild normally calls from their own phone.</Lede>
+
+        {/* Voicemail card */}
+        <div style={{
+          background: '#fff', border: '1px solid var(--line)',
+          borderRadius: 18, padding: '24px 28px', marginBottom: 28,
+          boxShadow: 'var(--shadow-card)',
+          display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 18,
+        }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: 16,
+            background: '#FDECEB', color: '#B9322E',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <M3Icon name="phone"/>
+          </div>
+          <div>
+            <div style={{ fontSize: 14, color: 'var(--muted)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>Voicemail · 0:32</div>
+            <div style={{ fontFamily: 'var(--f-display)', fontSize: 20, fontWeight: 700, color: 'var(--navy-ink)', marginBottom: 10 }}>From: Unknown number</div>
+            <div style={{ fontSize: 18, color: 'var(--ink)', lineHeight: 1.55, fontStyle: 'italic', background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 12, padding: '16px 18px' }}>
+              "Grandma — it's me. I'm in real trouble, I got into an accident and I need <strong style={{ color: 'var(--ink)' }}>$2,000</strong> wired right now. Please don't tell Mom or Dad. I'll explain everything later, just please hurry…"
+            </div>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 19, fontWeight: 600, color: 'var(--navy-ink)', marginBottom: 14 }}>
+          What should you do first?
+        </div>
+        <div role="radiogroup" style={{ display: 'grid', gap: 12, marginBottom: 28 }}>
+          {M3_OPTS.map(o => {
+            const selected = pick === o.id;
+            const show = submitted && selected;
+            return (
+              <button
+                key={o.id}
+                role="radio"
+                aria-checked={selected}
+                onClick={() => !submitted && setPick(o.id)}
+                disabled={submitted}
+                style={{
+                  textAlign: 'left', cursor: submitted ? 'default' : 'pointer',
+                  padding: '18px 22px', minHeight: 64,
+                  borderRadius: 14,
+                  background: show ? (o.correct ? '#EAF3F1' : '#FDECEB') : (selected ? '#EAF3F1' : '#fff'),
+                  border: `2px solid ${show ? (o.correct ? 'var(--teal)' : '#C53030') : (selected ? 'var(--teal)' : 'var(--line-strong)')}`,
+                  fontFamily: 'inherit', fontSize: 19, fontWeight: 500, color: 'var(--navy-ink)',
+                  display: 'flex', alignItems: 'center', gap: 14,
+                }}
+              >
+                <span style={{
+                  width: 24, height: 24, borderRadius: 999,
+                  border: `2px solid ${selected ? 'var(--teal)' : 'var(--line-strong)'}`,
+                  background: selected ? 'var(--teal)' : '#fff',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  {selected && <span style={{ width: 9, height: 9, borderRadius: 999, background: '#fff' }}/>}
+                </span>
+                <span style={{ flex: 1 }}>{o.label}</span>
+                {submitted && o.correct && <span style={{ color: 'var(--teal-deep)', fontSize: 15, fontWeight: 700 }}>✓ Best first step</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        {!submitted ? (
+          <Button variant="primary" onClick={() => pick && setSubmitted(true)} disabled={!pick}>
+            Check my answer <ArrowRight/>
+          </Button>
+        ) : (
+          <>
+            <div style={{
+              background: chosen?.correct ? '#EAF3F1' : '#FFF4E0',
+              border: `2px solid ${chosen?.correct ? 'var(--teal)' : '#E09A2B'}`,
+              borderRadius: 18, padding: '22px 26px', marginBottom: 20,
+            }}>
+              <div style={{ fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 700, color: chosen?.correct ? 'var(--teal-deep)' : '#7A4A08', marginBottom: 6 }}>
+                {chosen?.correct ? "That's right." : "Not quite — let's look at this again."}
+              </div>
+              <div style={{ fontSize: 17, color: 'var(--ink-2)', lineHeight: 1.55 }}>
+                Call your grandchild's real phone number first. Scammers use AI to clone voices, so even a familiar voice isn't proof. A real grandchild will be relieved you checked.
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+              <Button variant="primary" onClick={() => { onComplete(); onNav('dashboard'); }}>Finish module <ArrowRight/></Button>
+              <Button variant="outline" onClick={() => { setPick(null); setSubmitted(false); }}>Try again</Button>
+            </div>
+          </>
+        )}
+      </main>
+    );
+  }
+  return null;
+};
+
+// =============================================================
+// Module 4 — What to Do When It Happens
+// =============================================================
+
+const M4_STEPS = [
+  { id: 's1', title: "Contact your bank",           body: "Call your bank right away to freeze affected accounts and stop any transfers in progress." },
+  { id: 's2', title: "Report to the FBI (ic3.gov)", body: "File a report at ic3.gov. This helps investigators and may help recover funds." },
+  { id: 's3', title: "Change your passwords",       body: "Update passwords on your email, bank, and any accounts the scammer may have seen." },
+  { id: 's4', title: "Tell someone you trust",      body: "A family member or friend can help you stay calm and think through next steps." },
+  { id: 's5', title: "Be kind to yourself",         body: "These scams are engineered to fool anyone. Reporting it is the brave, helpful thing to do." },
+];
+
+const shuffle = (a) => {
+  const r = [...a];
+  for (let i = r.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [r[i], r[j]] = [r[j], r[i]];
+  }
+  return r;
+};
+
+const Module4 = ({ onNav, onComplete }) => {
+  const [screen, setScreen] = React.useState('lesson');
+  const [order, setOrder] = React.useState(() => shuffle(M4_STEPS));
+  const [submitted, setSubmitted] = React.useState(false);
+
+  const back = <BackBar onBack={() => onNav('dashboard')}/>;
+
+  const move = (i, dir) => {
+    if (submitted) return;
+    const j = i + dir;
+    if (j < 0 || j >= order.length) return;
+    const next = [...order];
+    [next[i], next[j]] = [next[j], next[i]];
+    setOrder(next);
+  };
+
+  if (screen === 'lesson') return (
+    <main style={{ maxWidth: 900, margin: '0 auto', padding: '40px 40px 80px' }}>
+      {back}
+      <Eyebrow>Module 4 · Lesson</Eyebrow>
+      <BigTitle>If it happens, here's what to do.</BigTitle>
+      <Lede>Even careful people get caught sometimes. The sooner you act, the more you can protect — and you don't have to handle it alone.</Lede>
+
+      <div style={{ display: 'grid', gap: 16, marginBottom: 28 }}>
+        {M4_STEPS.map((s, i) => (
+          <div key={s.id} style={{
+            background: '#fff', border: '1px solid var(--line)',
+            borderRadius: 18, padding: '22px 26px',
+            boxShadow: 'var(--shadow-card)',
+            display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 20, alignItems: 'flex-start',
+          }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: 999,
+              background: 'var(--navy)', color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 700,
+              flexShrink: 0,
+            }}>{i + 1}</div>
+            <div>
+              <div style={{ fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-ink)', marginBottom: 4 }}>{s.title}</div>
+              <div style={{ fontSize: 17, color: 'var(--ink-2)', lineHeight: 1.55 }}>{s.body}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{
+        background: '#EAF3F1', border: '1px solid #D4E8E4',
+        borderRadius: 18, padding: '22px 26px',
+        fontSize: 18, color: 'var(--teal-deep)', lineHeight: 1.55, marginBottom: 32,
+      }}>
+        <strong>You haven't done anything wrong.</strong> AI-powered scams are designed to fool smart, cautious people. Reporting them protects others too.
+      </div>
+
+      <CTACard onStart={() => { setOrder(shuffle(M4_STEPS)); setSubmitted(false); setScreen('exercise'); }} label="Start practice" title="Put the steps in order." sub="Drag — or use the arrows — to arrange them."/>
+    </main>
+  );
+
+  if (screen === 'exercise') {
+    const correctOrder = M4_STEPS.map(s => s.id);
+    const userOrder = order.map(s => s.id);
+    const allCorrect = submitted && correctOrder.every((id, i) => id === userOrder[i]);
+
+    return (
+      <main style={{ maxWidth: 900, margin: '0 auto', padding: '40px 40px 80px' }}>
+        {back}
+        <Eyebrow>Module 4 · Practice exercise</Eyebrow>
+        <BigTitle>Put these steps in the right order.</BigTitle>
+        <Lede>You've just realized you may have been scammed. Order the steps from first (top) to last (bottom).</Lede>
+
+        <div style={{ display: 'grid', gap: 12, marginBottom: 28 }}>
+          {order.map((s, i) => {
+            const correctIdx = correctOrder.indexOf(s.id);
+            const isCorrect = submitted && correctIdx === i;
+            const isWrong = submitted && correctIdx !== i;
+            return (
+              <div key={s.id} style={{
+                background: submitted ? (isCorrect ? '#EAF3F1' : '#FDECEB') : '#fff',
+                border: `2px solid ${submitted ? (isCorrect ? 'var(--teal)' : '#C53030') : 'var(--line-strong)'}`,
+                borderRadius: 14, padding: '16px 18px',
+                display: 'grid', gridTemplateColumns: 'auto auto 1fr auto', gap: 14, alignItems: 'center',
+              }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 999,
+                  background: 'var(--navy)', color: '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontFamily: 'var(--f-display)', fontSize: 17, fontWeight: 700,
+                }}>{i + 1}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <button
+                    onClick={() => move(i, -1)}
+                    disabled={submitted || i === 0}
+                    aria-label="Move up"
+                    style={{
+                      width: 36, height: 28, borderRadius: 6, cursor: submitted || i === 0 ? 'not-allowed' : 'pointer',
+                      border: '1px solid var(--line-strong)', background: '#fff', color: 'var(--navy-ink)',
+                      opacity: submitted || i === 0 ? 0.35 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 15l6-6 6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </button>
+                  <button
+                    onClick={() => move(i, 1)}
+                    disabled={submitted || i === order.length - 1}
+                    aria-label="Move down"
+                    style={{
+                      width: 36, height: 28, borderRadius: 6, cursor: submitted || i === order.length - 1 ? 'not-allowed' : 'pointer',
+                      border: '1px solid var(--line-strong)', background: '#fff', color: 'var(--navy-ink)',
+                      opacity: submitted || i === order.length - 1 ? 0.35 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </button>
+                </div>
+                <div>
+                  <div style={{ fontFamily: 'var(--f-display)', fontSize: 19, fontWeight: 700, color: 'var(--navy-ink)' }}>{s.title}</div>
+                  <div style={{ fontSize: 15, color: 'var(--ink-2)' }}>{s.body}</div>
+                </div>
+                {submitted && (
+                  <div style={{ fontSize: 14, fontWeight: 700, color: isCorrect ? 'var(--teal-deep)' : '#C53030' }}>
+                    {isCorrect ? '✓ Right spot' : `Should be #${correctIdx + 1}`}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {!submitted ? (
+          <Button variant="primary" onClick={() => setSubmitted(true)}>Check my order <ArrowRight/></Button>
+        ) : (
+          <>
+            <div style={{
+              background: allCorrect ? '#EAF3F1' : '#FFF4E0',
+              border: `2px solid ${allCorrect ? 'var(--teal)' : '#E09A2B'}`,
+              borderRadius: 18, padding: '22px 26px', marginBottom: 20,
+            }}>
+              <div style={{ fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 700, color: allCorrect ? 'var(--teal-deep)' : '#7A4A08', marginBottom: 6 }}>
+                {allCorrect ? "Perfect order." : "Close — here's the recommended order."}
+              </div>
+              <div style={{ fontSize: 17, color: 'var(--ink-2)', lineHeight: 1.55 }}>
+                Start with your bank to stop the money moving, then report to the FBI, then lock down passwords, then tell someone you trust. Being kind to yourself is what carries you through the rest.
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+              <Button variant="primary" onClick={() => { onComplete(); onNav('dashboard'); }}>Finish module <ArrowRight/></Button>
+              <Button variant="outline" onClick={() => { setOrder(shuffle(M4_STEPS)); setSubmitted(false); }}>Try again</Button>
+            </div>
+          </>
+        )}
+      </main>
+    );
+  }
+  return null;
+};
+
+// =============================================================
+// Shared module helpers (UI bits reused across M1/M3/M4)
+// =============================================================
+const BackBar = ({ onBack }) => (
+  <button onClick={onBack} style={{
+    background: 'transparent', border: 'none', cursor: 'pointer',
+    color: 'var(--ink-2)', fontSize: 17, fontFamily: 'inherit',
+    display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 0', marginBottom: 20,
+  }}>
+    <ArrowLeft size={18}/> Back to My Learning
+  </button>
+);
+const Eyebrow = ({ children }) => (
+  <div style={{ color: 'var(--teal-deep)', fontSize: 15, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>{children}</div>
+);
+const BigTitle = ({ children }) => (
+  <h1 style={{
+    fontFamily: 'var(--f-display)',
+    fontSize: 'clamp(34px, 4.2vw, 48px)',
+    letterSpacing: '-0.02em', lineHeight: 1.06,
+    color: 'var(--navy-ink)', fontWeight: 700, margin: '0 0 18px',
+    textWrap: 'balance',
+  }}>{children}</h1>
+);
+const Lede = ({ children }) => (
+  <p style={{ fontSize: 21, color: 'var(--ink-2)', lineHeight: 1.5, margin: '0 0 36px', maxWidth: 700, textWrap: 'pretty' }}>{children}</p>
+);
+const CTACard = ({ onStart, title, sub, label }) => (
+  <div style={{
+    background: '#fff', border: '1px solid var(--line)',
+    borderRadius: 20, padding: '24px 28px',
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    gap: 16, flexWrap: 'wrap',
+  }}>
+    <div>
+      <div style={{ fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-ink)' }}>{title}</div>
+      <div style={{ fontSize: 17, color: 'var(--ink-2)' }}>{sub}</div>
+    </div>
+    <Button variant="primary" onClick={onStart}>{label} <ArrowRight/></Button>
+  </div>
+);
+
+// =============================================================
+// Module 2 Summary + Nudge modal
+// =============================================================
+const SummaryStat = ({ n, label, tone = 'navy', icon }) => {
+  const tones = {
+    navy:  { bg: '#E7EEF6', fg: 'var(--navy)',      num: 'var(--navy-ink)' },
+    teal:  { bg: '#EAF3F1', fg: 'var(--teal-deep)', num: 'var(--teal-deep)' },
+    amber: { bg: '#FFF4E0', fg: '#8A5A10',          num: '#7A4A08' },
+    muted: { bg: '#F1EEE9', fg: 'var(--muted)',     num: 'var(--ink-2)' },
+  }[tone];
+  return (
+    <div style={{
+      background: '#fff', border: '1px solid var(--line)',
+      borderRadius: 18, padding: '24px 22px',
+      boxShadow: 'var(--shadow-card)',
+      display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 16, alignItems: 'center',
+    }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: 16,
+        background: tones.bg, color: tones.fg,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>{icon}</div>
+      <div>
+        <div style={{
+          fontFamily: 'var(--f-display)', fontSize: 42, fontWeight: 700,
+          color: tones.num, lineHeight: 1, fontVariantNumeric: 'tabular-nums',
+        }}>{n}</div>
+        <div style={{ fontSize: 16, color: 'var(--ink-2)', marginTop: 4 }}>{label}</div>
+      </div>
+    </div>
+  );
+};
+
+const Module2Summary = ({ back, onContinue }) => {
+  const total = 8, first = 5, improved = 2, skipped = 1;
+  const iconCheck = (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>);
+  const iconBolt  = (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>);
+  const iconArrow = (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>);
+  const iconSkip  = (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>);
+
+  return (
+    <main style={{ maxWidth: 900, margin: '0 auto', padding: '40px 40px 80px' }}>
+      {back}
+      <Eyebrow>Module 2 · Summary</Eyebrow>
+      <BigTitle>Your Module 2 summary.</BigTitle>
+      <Lede>Nice work. Here's how this session went — no grades, just a picture of what you practiced.</Lede>
+
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+        gap: 14, marginBottom: 32,
+      }}>
+        <SummaryStat n={total}   label="Exercises completed"       tone="navy"  icon={iconCheck}/>
+        <SummaryStat n={first}   label="Got it right first try"    tone="teal"  icon={iconBolt}/>
+        <SummaryStat n={improved} label="Improved after reviewing" tone="amber" icon={iconArrow}/>
+        <SummaryStat n={skipped} label="Skipped"                   tone="muted" icon={iconSkip}/>
+      </div>
+
+      <div style={{
+        background: '#EAF3F1', border: '1px solid #D4E8E4',
+        borderRadius: 18, padding: '22px 26px', marginBottom: 32,
+        display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 16, alignItems: 'center',
+      }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 999,
+          background: 'var(--teal)', color: '#fff',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.4 6.9H22l-6.2 4.5L18.2 21 12 16.6 5.8 21l2.4-7.6L2 8.9h7.6z"/></svg>
+        </div>
+        <div style={{ fontSize: 18, color: 'var(--teal-deep)', lineHeight: 1.5 }}>
+          You reviewed explanations for most of the exercises you found tricky. <strong>That's a great strategy</strong> — looking at the "why" is how the lesson really sticks.
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+        <Button variant="primary" onClick={onContinue}>Continue to Module 3 <ArrowRight/></Button>
+        <Button variant="outline" onClick={onContinue}>Back to My Learning</Button>
+      </div>
+    </main>
+  );
+};
+
+const NudgeModal = ({ onYes, onNo }) => (
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="nudge-title"
+    style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      background: 'rgba(20, 36, 56, 0.42)',
+      backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 24, animation: 'nudgeFade .22s ease-out',
+    }}
+  >
+    <style>{`
+      @keyframes nudgeFade { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes nudgePop  { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+    `}</style>
+    <div style={{
+      background: '#fff', borderRadius: 24,
+      maxWidth: 520, width: '100%',
+      padding: '32px 34px 28px',
+      boxShadow: '0 24px 60px rgba(20, 36, 56, 0.28)',
+      animation: 'nudgePop .28s cubic-bezier(.2,.8,.2,1)',
+      border: '1px solid var(--line)',
+    }}>
+      <div style={{
+        width: 60, height: 60, borderRadius: 18,
+        background: '#EAF3F1', color: 'var(--teal-deep)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        marginBottom: 18,
+      }}>
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+          <path d="M12 8v4M12 16h.01"/>
+        </svg>
+      </div>
+      <h2 id="nudge-title" style={{
+        fontFamily: 'var(--f-display)',
+        fontSize: 28, fontWeight: 700, color: 'var(--navy-ink)',
+        margin: '0 0 12px', letterSpacing: '-0.01em',
+      }}>
+        Would you like some help?
+      </h2>
+      <p style={{
+        fontSize: 17, color: 'var(--ink-2)', lineHeight: 1.55,
+        margin: '0 0 24px',
+      }}>
+        It looks like the last couple of exercises were tough. Many learners find it helpful to review the explanation before moving on. Would you like to see why the last answer was different from what you expected?
+      </p>
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        <Button variant="primary" onClick={onYes}>Yes, show me</Button>
+        <Button variant="outline" onClick={onNo}>No thanks, continue</Button>
+      </div>
+    </div>
+  </div>
+);
+
+Object.assign(window, { Module2Summary, NudgeModal });
+
+
+
+// ===== src/tweaks.jsx =====
+// Tweaks panel
+const TweaksPanel = ({ tweaks, setTweaks, onClose }) => {
+  const set = (k, v) => setTweaks(t => ({ ...t, [k]: v }));
+
+  const group = (title, children) => (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>{title}</div>
+      {children}
+    </div>
+  );
+
+  const seg = (value, options) => (
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${options.length}, 1fr)`, gap: 4, background: 'var(--bg)', border: '1px solid var(--line)', padding: 4, borderRadius: 10 }}>
+      {options.map(([id, label]) => (
+        <button
+          key={id}
+          onClick={() => value.setter(id)}
+          style={{
+            border: 'none', cursor: 'pointer',
+            padding: '8px 10px', borderRadius: 7,
+            background: value.current === id ? '#fff' : 'transparent',
+            boxShadow: value.current === id ? '0 1px 2px rgba(0,0,0,0.08)' : 'none',
+            color: value.current === id ? 'var(--navy-ink)' : 'var(--ink-2)',
+            fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
+          }}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+
+  return (
+    <div style={{
+      position: 'fixed', bottom: 24, right: 24, zIndex: 100,
+      width: 320,
+      background: '#fff',
+      border: '1px solid var(--line)',
+      borderRadius: 16,
+      boxShadow: '0 12px 40px rgba(16,24,40,0.18)',
+      padding: 20,
+      fontSize: 14,
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+        <div style={{ fontFamily: 'var(--f-display)', fontSize: 18, fontWeight: 700, color: 'var(--navy-ink)' }}>Tweaks</div>
+        <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 20, lineHeight: 1 }} aria-label="Close tweaks">×</button>
+      </div>
+
+      {group('Hero pathway', seg(
+        { current: tweaks.heroVariant, setter: v => set('heroVariant', v) },
+        [['stepper', 'Stepper'], ['cards', 'Cards']]
+      ))}
+
+      {group('Survey layout', seg(
+        { current: tweaks.surveyLayout, setter: v => set('surveyLayout', v) },
+        [['stepped', 'One at a time'], ['stacked', 'All at once']]
+      ))}
+
+      {group('Dashboard', seg(
+        { current: tweaks.dashboardStyle, setter: v => set('dashboardStyle', v) },
+        [['cards', 'Cards'], ['list', 'List']]
+      ))}
+
+      {group('Display font', seg(
+        { current: tweaks.fontPairing, setter: v => set('fontPairing', v) },
+        [['inter', 'Inter'], ['serif', 'Serif']]
+      ))}
+
+      {group('Density', seg(
+        { current: tweaks.density, setter: v => set('density', v) },
+        [['standard', 'Standard'], ['roomy', 'Roomy']]
+      ))}
+
+      <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4, lineHeight: 1.5 }}>
+        Toggle Tweaks from the toolbar to hide this panel.
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, { TweaksPanel });
+
+
+// ===== src/app.jsx =====
+// App shell + routing + state
+const { useState, useEffect, useMemo } = React;
+
+const STORAGE_KEY = 'aiaware:v1';
+
+const loadState = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+};
+const saveState = (s) => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch {} };
+
+const getDefaults = () => {
+  const el = document.getElementById('tweak-defaults');
+  try { return JSON.parse(el.textContent.replace(/\/\*EDITMODE-(BEGIN|END)\*\//g, '')); } catch { return {}; }
+};
+
+function App() {
+  const saved = loadState() || {};
+  const defaults = getDefaults();
+
+  const [page, setPage] = useState(saved.page || 'landing');
+  const [openModule, setOpenModule] = useState(saved.openModule || null);
+  const [answers, setAnswers] = useState(saved.answers || {});
+  const [recommended, setRecommended] = useState(saved.recommended || null);
+  const [progress, setProgress] = useState(saved.progress || { 1: 'not-started', 2: 'not-started', 3: 'not-started', 4: 'not-started' });
+  const [tweaks, setTweaks] = useState({ ...defaults, ...(saved.tweaks || {}) });
+  const [tweaksOpen, setTweaksOpen] = useState(false);
+
+  // Persist
+  useEffect(() => {
+    saveState({ page, answers, recommended, progress, tweaks, openModule });
+  }, [page, answers, recommended, progress, tweaks, openModule]);
+
+  // Apply tweaks to root element
+  useEffect(() => {
+    document.documentElement.setAttribute('data-font', tweaks.fontPairing === 'serif' ? 'serif' : 'inter');
+    document.documentElement.setAttribute('data-density', tweaks.density || 'standard');
+  }, [tweaks.fontPairing, tweaks.density]);
+
+  // Tweaks host wiring
+  useEffect(() => {
+    const onMsg = (e) => {
+      if (!e.data || typeof e.data !== 'object') return;
+      if (e.data.type === '__activate_edit_mode') setTweaksOpen(true);
+      if (e.data.type === '__deactivate_edit_mode') setTweaksOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  // Persist changed tweaks to host
+  useEffect(() => {
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: tweaks }, '*');
+  }, [tweaks]);
+
+  const handleNav = (id) => {
+    if (id === 'help') {
+      alert("Prototype: help center would open here.\n\nCall 1-800-555-1234 · Mon–Fri 8am–6pm");
+      return;
+    }
+    setPage(id);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const handleOpenModule = (n) => {
+    setOpenModule(n);
+    setPage('module');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const handleSurveyComplete = (modNum) => {
+    setRecommended(modNum);
+    setProgress(p => ({ ...p, [modNum]: p[modNum] === 'completed' ? 'completed' : 'in-progress' }));
+  };
+
+  const handleProgressChange = (n, status) => {
+    setProgress(p => ({ ...p, [n]: status }));
+  };
+
+  const overallProgress = useMemo(() => {
+    if (page === 'landing' || !recommended) return null;
+    const done = Object.values(progress).reduce((s, p) => s + (p === 'completed' ? 1 : p === 'in-progress' ? 0.5 : 0), 0);
+    return Math.round((done / 4) * 100);
+  }, [progress, recommended, page]);
+
+  return (
+    <>
+      <TopBar currentPage={page} onNav={handleNav} progress={overallProgress}/>
+      {page === 'landing' && <Landing onNav={handleNav} heroVariant={tweaks.heroVariant}/>}
+      {page === 'survey' && (
+        <Survey
+          onNav={handleNav}
+          onComplete={handleSurveyComplete}
+          surveyLayout={tweaks.surveyLayout}
+          answers={answers}
+          setAnswers={setAnswers}
+        />
+      )}
+      {page === 'dashboard' && (
+        <Dashboard
+          onNav={handleNav}
+          recommended={recommended}
+          progress={progress}
+          dashboardStyle={tweaks.dashboardStyle}
+          onProgressChange={handleProgressChange}
+          onOpenModule={handleOpenModule}
+        />
+      )}
+      {page === 'module' && openModule === 1 && (
+        <Module1 onNav={handleNav} onComplete={() => handleProgressChange(1, 'completed')}/>
+      )}
+      {page === 'module' && openModule === 2 && (
+        <Module2 onNav={handleNav} onComplete={() => handleProgressChange(2, 'completed')}/>
+      )}
+      {page === 'module' && openModule === 3 && (
+        <Module3 onNav={handleNav} onComplete={() => handleProgressChange(3, 'completed')}/>
+      )}
+      {page === 'module' && openModule === 4 && (
+        <Module4 onNav={handleNav} onComplete={() => handleProgressChange(4, 'completed')}/>
+      )}
+      <Footer onNav={handleNav}/>
+      {tweaksOpen && <TweaksPanel tweaks={tweaks} setTweaks={setTweaks} onClose={() => {
+        setTweaksOpen(false);
+        window.parent.postMessage({ type: '__deactivate_edit_mode' }, '*');
+      }}/>}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+
+
+</script>
+</body>
+</html>
